@@ -390,7 +390,7 @@
             {"id": "020", "name": "獅仔頭山", "region": "北部", "county": "新北", "alt": 858, "dist": 5.5, "time": 2.5, "lat": 24.90475578, "lng": 121.49115, "difficulty": "🦶🦶🦶", "climb": "238m", "ep_index": 7.88, "trans": "環狀線→十四張站→綠1", "accom": "無需住宿"},
             {"id": "021", "name": "金面山", "region": "北部", "county": "桃園", "alt": 667, "dist": 5.8, "time": 4.5, "lat": 24.866533, "lng": 121.33547, "difficulty": "🦶🦶🦶🦶", "climb": "402m", "ep_index": 9.82, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
             {"id": "022", "name": "東眼山", "region": "北部", "county": "桃園", "alt": 1212, "dist": 3.5, "time": 2.0, "lat": 24.82512812, "lng": 121.4174982, "difficulty": "🦶🦶", "climb": "292m", "ep_index": 6.42, "trans": "機捷→桃園/大溪→台灣好行", "accom": "無需住宿"},
-            {"id": "023", "name": "溪州山", "region": "北部", "county": "桃園", "alt": 577, "dist": 7.9, "time": 3.17, "lat": 24.824555, "lng": 121.277251, "difficulty": "🦶🦶🦶🦶", "climb": "432m", "ep_index": 12.22, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
+            {"id": "023", "name": "溪洲山", "region": "北部", "county": "桃園", "alt": 577, "dist": 7.9, "time": 3.17, "lat": 24.824555, "lng": 121.277251, "difficulty": "🦶🦶🦶🦶", "climb": "432m", "ep_index": 12.22, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
             {"id": "024", "name": "石門山", "region": "北部", "county": "桃園", "alt": 551, "dist": 2.0, "time": 2.0, "lat": 24.81001773, "lng": 121.2294341, "difficulty": "🦶🦶", "climb": "226m", "ep_index": 4.26, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
             {"id": "025", "name": "石牛山", "region": "北部", "county": "新竹", "alt": 671, "dist": 4.0, "time": 2.5, "lat": 24.793608, "lng": 121.25329, "difficulty": "🦶🦶🦶", "climb": "390m", "ep_index": 7.9, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "026", "name": "十八尖山", "region": "北部", "county": "新竹", "alt": 131, "dist": 3.7, "time": 1.5, "lat": 24.79254322, "lng": 120.9845994, "difficulty": "🦶🦶", "climb": "81m", "ep_index": 4.51, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
@@ -553,21 +553,22 @@
             // 自動載入小百岳GPX檔
             peakData.forEach(peak => {
                 const fileName = `${peak.id}-${peak.name}.gpx`;
-                const filePath = `./gpx/${fileName}`;
+                const filePath = `/gpx/${fileName}`;
 
                 fetch(filePath)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error("找不到檔案或讀取失敗");
                         }
-                        parseGpx(response.text(), fileName); // GPX 本質上是 XML 格式的文字
+                        return response.text(); // GPX 本質上是 XML 格式的文字
                     })
                     .then(data => {
-                        gpxData = data; // 儲存到變數中
-                        console.log("GPX 載入成功！");
-                        console.log(gpxData); // 在控制台查看內容
+                        const gpxData = data; // 儲存到變數中
+                        //console.log("GPX 載入成功！");
+                        //console.log(gpxData); // 在控制台查看內容
                         
-                        console.log(`${fileName} 已載入`);
+                        //console.log(`${fileName} 已載入`);
+                        parseGpx(data, fileName);
                     })
                     .catch(error => {
                         console.error("錯誤:", error);
