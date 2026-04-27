@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人作品集 | 我的 GitHub 網站</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', 'Noto Sans TC', sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-bg {
+            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent),
+                        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1), transparent);
+        }
+
+        .nav-blur {
+            backdrop-filter: blur(8px);
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 hero-bg">
+
+    <!-- 導航欄 -->
+    <nav class="fixed top-0 w-full z-50 nav-blur border-b border-slate-200">
+        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+            <a href="#" class="text-xl font-bold gradient-text">YourName.dev</a>
+            <div class="hidden md:flex space-x-8">
+                <a href="#about" class="hover:text-indigo-600 transition">關於我</a>
+                <a href="#projects" class="hover:text-indigo-600 transition">專案</a>
+                <a href="#skills" class="hover:text-indigo-600 transition">技能</a>
+                <a href="#contact" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">聯絡我</a>
+            </div>
+            <!-- 行動端菜單按鈕 -->
+            <button class="md:hidden p-2" id="mobile-menu-btn">
+                <i data-lucide="menu"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 英雄區 -->
+    <section class="pt-32 pb-20 px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="mb-6 inline-block p-2 bg-indigo-50 text-indigo-600 rounded-full text-sm font-semibold px-4">
+                👋 你好，我是 phillip
+            </div>
+            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
+                致力於打造 <span class="gradient-text">卓越的數位體驗</span>
+            </h1>
+            <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+                我是一名網頁開發者與設計愛好者。專注於 React、Node.js 以及如何透過科技解決現實生活中的問題。
+            </p>
+            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+                <a href="#projects" class="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition flex items-center justify-center gap-2">
+                    查看我的作品 <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+                <a href="https://github.com" target="_blank" class="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
+                    <i data-lucide="github" class="w-5 h-5"></i> GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 關於我區塊 -->
+    <section id="about" class="py-20 bg-white">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="relative">
+                    <div class="aspect-square rounded-2xl bg-slate-200 overflow-hidden">
+                         <!-- 預留照片位置，若有照片可更換 src -->
+                        <div class="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-400">
+                            <i data-lucide="user" class="w-24 h-24"></i>
+                        </div>
+                    </div>
+                    <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-600 rounded-2xl -z-10"></div>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold mb-6">關於我</h2>
+                    <p class="text-lg text-slate-600 mb-6 leading-relaxed">
+                        這裡可以寫一段關於你的介紹。例如你的學歷、你對編程的熱情，或是你目前正在學習的技術。我喜歡探索新事物，並持續在技術領域深耕。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <h3 class="font-bold text-indigo-600 text-2xl">2+</h3>
+                            <p class="text-sm text-slate-500">開發經驗 (年)</p>
+                        </div>
+                        <div class="p-4 bg-slate-50 rounded-lg">
+                            <h3 class="font-bold text-indigo-600 text-2xl">10+</h3>
+                            <p class="text-sm text-slate-500">完成專案</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 專案展示 -->
+    <section id="projects" class="py-20">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <h2 class="text-3xl font-bold mb-2">精選作品</h2>
+                    <p class="text-slate-500">我最近參與的一些有趣專案</p>
+                </div>
+                <a href="#" class="text-indigo-600 font-semibold flex items-center gap-1 hover:underline">
+                    查看全部 <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- 專案卡片 1 -->
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
+                    <div class="h-48 bg-slate-200 flex items-center justify-center">
+                        <i data-lucide="map-pin" class="w-12 h-12 text-slate-400"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">台灣小百岳地圖</h3>
+                        <p class="text-slate-600 text-sm mb-4">使用 Leaflet.js、Chart.js 和 Tailwind CSS 構建的響應式地圖介面。</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">React</span>
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Node.js</span>
+                        </div>
+                        <a href="https://phillipzozo.github.io/%E6%9C%80%E7%B5%82%E7%89%88.html" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+
+                <!-- 專案卡片 2 -->
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
+                    <div class="h-48 bg-slate-200 flex items-center justify-center">
+                        <i data-lucide="smartphone" class="w-12 h-12 text-slate-400"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">天氣預報 App</h3>
+                        <p class="text-slate-600 text-sm mb-4">呼叫 OpenWeather API 顯示全球城市的實時天氣數據與 5 天預報。</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">JavaScript</span>
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">API</span>
+                        </div>
+                        <a href="#" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+
+                <!-- 專案卡片 3 -->
+                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
+                    <div class="h-48 bg-slate-200 flex items-center justify-center">
+                        <i data-lucide="database" class="w-12 h-12 text-slate-400"></i>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="font-bold text-xl mb-2">任務管理系統</h3>
+                        <p class="text-slate-600 text-sm mb-4">具備 CRUD 功能的後台系統，用於追蹤個人學習進度與專案日程。</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Vue.js</span>
+                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Firebase</span>
+                        </div>
+                        <a href="#" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 技能區塊 -->
+    <section id="skills" class="py-20 bg-slate-900 text-white">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-12">技術棧</h2>
+            <div class="flex flex-wrap justify-center gap-8 md:gap-16">
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
+                        <i data-lucide="code-2" class="w-8 h-8 text-indigo-400"></i>
+                    </div>
+                    <span class="font-medium text-slate-300">Frontend</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
+                        <i data-lucide="server" class="w-8 h-8 text-purple-400"></i>
+                    </div>
+                    <span class="font-medium text-slate-300">Backend</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
+                        <i data-lucide="figma" class="w-8 h-8 text-pink-400"></i>
+                    </div>
+                    <span class="font-medium text-slate-300">UI/UX Design</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
+                        <i data-lucide="git-branch" class="w-8 h-8 text-emerald-400"></i>
+                    </div>
+                    <span class="font-medium text-slate-300">Version Control</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 聯絡資訊 -->
+    <section id="contact" class="py-20">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">感興趣合作嗎？</h2>
+            <p class="text-slate-600 mb-10 text-lg">目前開放承接專案與職位機會，歡迎來信討論你的想法！</p>
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm inline-block">
+                <div class="flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
+                            <i data-lucide="mail"></i>
+                        </div>
+                        <span class="text-lg font-medium">hello@yourname.com</span>
+                    </div>
+                    <div class="hidden md:block w-px h-8 bg-slate-200"></div>
+                    <div class="flex gap-4">
+                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="linkedin"></i></a>
+                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="twitter"></i></a>
+                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="github"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 頁腳 -->
+    <footer class="py-12 border-t border-slate-200 text-center text-slate-500 text-sm">
+        <div class="max-w-6xl mx-auto px-4">
+            <p>© 2024 YourName. 使用 Tailwind CSS 與 Lucide Icons 製作</p>
+        </div>
+    </footer>
+
+    <!-- 行動端彈窗 (選配) -->
+    <div id="mobile-menu" class="fixed inset-0 bg-white z-[60] hidden flex-col items-center justify-center space-y-8 text-2xl font-bold">
+        <button id="close-menu-btn" class="absolute top-6 right-6 p-2 text-slate-900">
+            <i data-lucide="x" class="w-8 h-8"></i>
+        </button>
+        <a href="#about" class="mobile-link">關於我</a>
+        <a href="#projects" class="mobile-link">專案</a>
+        <a href="#skills" class="mobile-link">技能</a>
+        <a href="#contact" class="mobile-link">聯絡我</a>
+    </div>
+
+    <script>
+        // 初始化圖標
+        lucide.createIcons();
+
+        // 行動端選單邏輯
+        const menuBtn = document.getElementById('mobile-menu-btn');
+        const closeBtn = document.getElementById('close-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileLinks = document.querySelectorAll('.mobile-link');
+
+        function toggleMenu() {
+            mobileMenu.classList.toggle('hidden');
+            mobileMenu.classList.toggle('flex');
+            document.body.classList.toggle('overflow-hidden');
+        }
+
+        menuBtn.addEventListener('click', toggleMenu);
+        closeBtn.addEventListener('click', toggleMenu);
+        mobileLinks.forEach(link => {
+            link.addEventListener('click', toggleMenu);
+        });
+    </script>
+</body>
+</html>
