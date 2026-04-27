@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="referrer" content="no-referrer-when-downgrade">
+    <title>台灣小百岳完登全紀錄 ⛰️ 100座完整版</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 引入 Leaflet 地圖庫 -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body {
+            background-color: #f5f5f4; 
+            color: #292524; 
+            font-family: 'Helvetica Neue', Arial, 'LiHei Pro', 'Microsoft JhengHei', sans-serif;
+        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #e7e5e4; }
+        ::-webkit-scrollbar-thumb { background: #a8a29e; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #78716c; }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            height: 400px;
+        }
+
+        #map {
+            width: 100%;
+            height: 600px;
+            border-radius: 1rem;
+            z-index: 10;
+        }
+
+        .peak-card {
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .peak-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: #10b981;
+        }
+
+        .custom-popup {
+            margin: -4px -9px -3px -8px;
+            width: 96px;
+        }
+
+        /* GPX 工具箱浮動面板 */
+        .gpx-toolbox {
+            z-index: 1001;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(8px);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .difficulty-tag { font-size: 0.65rem;
+            border-radius: 9999px;
+            text-transform: uppercase;
+        }
+
+        .elevation-chart-container {
+            width: 100%;
+            height: 180px;
+            margin-top: 10px;
+        }
+
+        .btn-action {
+            transition: all 0.2s;
+            border-radius: 0.75rem;
+            font-weight: 700;
+            font-size: 0.75rem;
+            padding: 0.5rem 1rem; 
+        }
+        .file-list-item {
+            transition: background 0.2s;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Chosen Palette: Earth & Forest (Stone-100, Emerald-600, Amber-500, Sky-500, Red-500) -->
+    <!-- Application Structure Plan: 
+         1. Header: Quick links and context.
+         2. Stats Dashboard: Summary of 100 peaks progress and difficulty types.
+         3. Interactive Map: Full Taiwan map with 100 custom markers.
+         4. Chart Analysis: Scatter plot comparing Time vs Distance.
+         5. Explorer: Searchable and filterable card grid for 100 peaks.
+    -->
+    <!-- Visualization & Content Choices: 
+         - Leaflet Map: Best for 100 markers. Click for summary.
+         - Chart.js Bubble Chart: Shows altitude as bubble size to identify "tougher" peaks.
+         - Filterable Grid: Efficiently manages 100 data points.
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <header class="bg-emerald-800 text-stone-50 shadow-lg sticky top-0 z-[2000]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <h1 class="text-xl md:text-2xl font-bold tracking-wider">⛰️ 台灣小百岳完登計畫 <span class="text-emerald-300 text-sm font-normal hidden sm:inline">| GPX 軌跡與地圖</span></h1>
+            <nav class="flex space-x-4 md:space-x-6 text-sm">
+                <a href="#map-section" class="hover:text-emerald-200 transition">地圖工具</a>
+                <a href="#explorer" class="hover:text-emerald-200 transition">山岳清單</a>
+                <a href="#strategy" class="hover:text-emerald-200 transition">規劃建議</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+
+        <!-- 數據儀表板 -->
+        <section id="dashboard" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-1 space-y-4">
+                <div class="bg-emerald-700 text-white p-4 rounded-2xl shadow-md">
+                    <h2 class="text-lg font-bold opacity-80 mb-2">總完登目標</h2>
+                    <div class="text-5xl font-black mb-2">100 <span class="text-xl font-normal">座</span></div>
+                    <p class="text-xs text-emerald-200">涵蓋全台各縣市、外島，包含郊山、中級山與高山景觀步道。</p>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-stone-400 text-xs font-bold">最速行程 (≤1hr)</div>
+                        <div class="text-2xl font-bold text-emerald-600" id="stat-fast">--</div>
+                    </div>
+                    <div class="text-3xl">⏱️</div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <div class="text-stone-400 text-xs font-bold">魔王挑戰 (≥5hr)</div>
+                        <div class="text-2xl font-bold text-red-600" id="stat-hard">--</div>
+                    </div>
+                    <div class="text-3xl">👺</div>
+                </div>
+
+                <!-- 檔案清單列表 -->
+                <div class="bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+                    <div>
+                        <label class="text-[10px] font-black text-stone-400 uppercase tracking-widest block">已載入檔案清單: <span id="loaded-tracks-count" class="font-bold text-emerald-600">0</span></label>
+                        <div id="gpx-file-list" class="max-h-20 min-h-20 overflow-y-auto bg-stone-50 rounded-lg p-1 border border-stone-100 space-y-1">
+                            <!-- JS 動態生成項目 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 難度散佈圖 -->
+            <div class="md:col-span-2 bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                <h3 class="text-lg font-bold text-stone-700 mb-4">100座小百岳體能需求落點</h3>
+                <div class="chart-container">
+                    <canvas id="difficultyChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- 地圖區塊 -->
+        <section id="map-section" class="space-y-4">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-emerald-600 pl-3">全台 100 座小百岳分佈</h2>
+                    <p class="text-stone-500 mt-1">點擊座標點可預覽山岳數據。</p>
+                </div>
+                <div class="text-xs text-stone-400">當前顯示：<span id="map-filter-label" class="font-bold text-emerald-600">全部</span></div>
+            </div>
+
+            <div class="relative bg-white p-2 rounded-2xl shadow-xl border border-stone-200 overflow-hidden">
+                <!-- GPX 工具箱 (浮動面板) -->
+                <div class="gpx-toolbox absolute top-4 right-4 w-64 p-3 rounded-xl shadow-lg border border-stone-200 space-y-1">
+                    <div class="text-xs font-bold text-emerald-800 border-b pb-1 flex justify-between items-center">
+                        <span>🛰️ GPX 工具箱</span>
+                        <span id="gpx-status" class="text-[10px] bg-stone-100 px-1 rounded text-stone-400">閒置</span>
+                    </div>
+                    
+                    <!-- 檔案上傳 -->
+                    <div class="">
+                        <label class="text-[10px] font-bold text-stone-400">匯入軌跡</label>
+                        <input type="file" id="gpx-upload" multiple accept=".gpx" class="w-full text-xs text-stone-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer" />
+                    </div>
+
+                    <!-- 海拔高度 -->
+                    <div id="active-gpx-info" class="hidden animate-in fade-in slide-in-from-top-2">
+                        <h4 id="active-peak-name" class="font-black text-stone-800 text-sm mb-1 truncate">山岳名稱</h4>
+                        <div class="flex justify-between items-end mb-2">
+                            <span class="text-[10px] text-stone-400">里程 / 最高海拔</span>
+                            <span class="text-sm font-black text-emerald-600">
+                                <span id="active-peak-dist">0.0</span> km / <span id="active-peak-max-ele">0</span>m
+                            </span>
+                        </div>
+                        
+                        <!-- 高度剖面圖 (Chart.js) -->
+                        <div class="elevation-chart-container">
+                            <canvas id="elevationChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-stone-50">
+                        <button id="btn-reset-map" class="w-full text-center text-[10px] text-stone-500 hover:text-emerald-600 transition font-bold">↩ 重設地圖檢視</button>
+                    </div>
+
+                    <!-- 編輯控制 -->
+                    <div class="grid grid-cols-2 gap-2 pt-2 border-t">
+                        <button id="btn-toggle-all" class="btn-action bg-stone-100 text-stone-600 hover:bg-stone-200">👁️ 隱藏/顯示</button>
+                        <button id="btn-clear-all" class="btn-action bg-red-50 text-red-600 hover:bg-red-100">🗑️ 全部清除</button>
+                    </div>
+                </div>
+
+                <!-- 地圖主體 -->
+                <div id="map"></div>
+            </div>
+        </section>
+
+        <!-- 分級說明 -->
+        <section id="level" class="space-y-6">
+            <div class="flex justify-between items-end">
+                <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-emerald-600 pl-3">小百岳難度分級</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <!-- Level 1 -->
+                <div class="bg-white rounded-2xl border border-stone-200 shadow-md flex flex-col overflow-hidden">
+                    <div class="p-4 bg-sky-500 text-white">
+                        <h3 class="mb-1 text-xl font-bold">親子健行級</h3>
+                        <div class="" >輕鬆登山路線</div>
+                        <div class="" ><span style="color: #FFD700;">🦶</span> <span style="opacity: 0.3;">🦶 🦶 🦶 🦶</span></div>
+                    </div>
+
+                    <div class="px-4 py-2">
+                        <ul>
+                            <li class="py-2 border-b-2 border-gray-300">⏱️ 時間：1.5小時內完成</li>
+                            <li class="py-2 border-b-2 border-gray-300">📏 路程：3公里以內</li>
+                            <li class="py-2 border-b-2 border-gray-300">⛰️ 攀升：300公尺以下</li>
+                            <li class="py-2 border-b-2 border-gray-300">💪 體力：輕鬆級 (指數≤5.5)</li>
+                            <li class="py-2">👥 建議對象：親子同遊、銀髮族、登山新手</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Level 2 -->
+                <div class="bg-white rounded-2xl border border-stone-200 shadow-md flex flex-col overflow-hidden">
+                    <div class="p-4 bg-green-600 text-white">
+                        <h3 class="mb-1 text-xl font-bold">初階健行級</h3>
+                        <div class="" >基礎登山健行路線</div>
+                        <div class="" ><span style="color: #FFD700;">🦶 🦶</span> <span style="opacity: 0.3;">🦶 🦶 🦶</span></div>
+                    </div>
+
+                    <div class="px-4 py-2">
+                        <ul>
+                            <li class="py-2 border-b-2 border-gray-300">⏱️ 時間：2小時內完成</li>
+                            <li class="py-2 border-b-2 border-gray-300">📏 路程：5公里以內</li>
+                            <li class="py-2 border-b-2 border-gray-300">⛰️ 攀升：400公尺以下</li>
+                            <li class="py-2 border-b-2 border-gray-300">💪 體力：初階級 (指數≤8)</li>
+                            <li class="py-2">👥 建議對象：一般健行愛好者、有基礎體力者</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Level 3 -->
+                <div class="bg-white rounded-2xl border border-stone-200 shadow-md flex flex-col overflow-hidden">
+                    <div class="p-4 bg-amber-600 text-white">
+                        <h3 class="mb-1 text-xl font-bold">中階健行級</h3>
+                        <div class="" >半日登山探索路線</div>
+                        <div class="" ><span style="color: #FFD700;">🦶 🦶 🦶</span> <span style="opacity: 0.3;">🦶 🦶</span></div>
+                    </div>
+
+                    <div class="px-4 py-2">
+                        <ul>
+                            <li class="py-2 border-b-2 border-gray-300">⏱️ 時間：3.5小時內完成</li>
+                            <li class="py-2 border-b-2 border-gray-300">📏 路程：7公里以內</li>
+                            <li class="py-2 border-b-2 border-gray-300">⛰️ 攀升：500公尺以下</li>
+                            <li class="py-2 border-b-2 border-gray-300">💪 體力：中等級 (指數≤10.5)</li>
+                            <li class="py-2">👥 建議對象：經常健行者、體能穩定者</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Level 4 -->
+                <div class="bg-white rounded-2xl border border-stone-200 shadow-md flex flex-col overflow-hidden">
+                    <div class="p-4 bg-purple-500 text-white">
+                        <h3 class="mb-1 text-xl font-bold">進階健行級</h3>
+                        <div class="" >全日制挑戰路線</div>
+                        <div class="" ><span style="color: #FFD700;">🦶 🦶 🦶 🦶</span> <span style="opacity: 0.3;">🦶</span></div>
+                    </div>
+
+                    <div class="px-4 py-2">
+                        <ul>
+                            <li class="py-2 border-b-2 border-gray-300">⏱️ 時間：5小時內完成</li>
+                            <li class="py-2 border-b-2 border-gray-300">📏 路程：9公里以內</li>
+                            <li class="py-2 border-b-2 border-gray-300">⛰️ 攀升：600公尺以下</li>
+                            <li class="py-2 border-b-2 border-gray-300">💪 體力：進階級 (指數≤13)</li>
+                            <li class="py-2">👥 建議對象：資深健行者、體能充沛者</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Level 5 -->
+                <div class="bg-white rounded-2xl border border-stone-200 shadow-md flex flex-col overflow-hidden">
+                    <div class="p-4 text-white bg-red-500">
+                        <h3 class="mb-1 text-xl font-bold">高階健行級</h3>
+                        <div class="" >百岳練習路線</div>
+                        <div class="" ><span style="color: #FFD700;">🦶 🦶 🦶 🦶 🦶</span></div>
+                    </div>
+
+                    <div class="px-4 py-2">
+                        <ul>
+                            <li class="py-2 border-b-2 border-gray-300">⏱️ 時間：8小時內完成</li>
+                            <li class="py-2 border-b-2 border-gray-300">📏 路程：10公里以上</li>
+                            <li class="py-2 border-b-2 border-gray-300">⛰️ 攀升：700公尺以下</li>
+                            <li class="py-2 border-b-2 border-gray-300">💪 體力：高強度 (指數≥10)</li>
+                            <li class="py-2">👥 建議對象：準百岳挑戰者、優秀體能者</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 探索與過濾 -->
+        <section id="explorer" class="space-y-6">
+            <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-emerald-600 pl-3">百岳清單探索</h2>
+                <div class="flex flex-wrap justify-center gap-2" id="filter-container">
+                    <button class="filter-btn active bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold" data-region="all">全部</button>
+                    <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="北部">北部</button>
+                    <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="中部">中部</button>
+                    <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="南部">南部</button>
+                    <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="東部">東部</button>
+                    <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="離島">離島</button>
+                </div>
+            </div>
+
+            <div id="peak-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- 由 JS 生成 100 張卡片 -->
+            </div>
+        </section>
+
+        <!-- 完登策略 -->
+        <section id="strategy" class="bg-emerald-50 p-8 rounded-3xl border border-emerald-100 flex flex-col md:flex-row gap-8">
+            <div class="flex-1">
+                <h2 class="text-2xl font-bold text-emerald-900 mb-4">📍 完登路徑規劃建議</h2>
+                <ul class="space-y-4 text-stone-700">
+                    <li class="flex items-start">
+                        <span class="bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded mr-3 mt-1 text-xs">01</span>
+                        <p class="text-sm">利用地圖工具標註多個鄰近點位，例如 **基隆三寶** (003, 004, 006)，可匯出成一個 GPX 軌跡一次攻略。</p>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-emerald-200 text-emerald-800 font-bold px-2 py-0.5 rounded mr-3 mt-1 text-xs">02</span>
+                        <p class="text-sm">從 **新北產業園區** 出發，建議先從環狀線、機捷沿線的小百岳開始練習，熟悉裝備與節奏。</p>
+                    </li>
+                </ul>
+            </div>
+            <div class="flex-1 bg-white p-6 rounded-2xl border border-emerald-200 shadow-sm">
+                <h3 class="font-bold text-emerald-800 mb-2">如何使用編輯器？</h3>
+                <p class="text-xs text-stone-500 leading-relaxed">
+                    1. 點擊 **🖌️ 繪製路徑** 開啟編輯模式。<br>
+                    2. 在地圖上直接點擊可新增軌跡點。<br>
+                    3. 點位可以點擊後拖移，或再次點擊移除（若支援）。<br>
+                    4. 點擊 **💾 匯出 GPX** 下載檔案到手機導航 App。
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-500 py-12 text-center">
+        <div class="max-w-7xl mx-auto px-4">
+            <p class="text-lg font-bold text-stone-300 mb-2">⛰️ 台灣小百岳完登計畫</p>
+            <p class="text-sm">本應用程式僅供登山規劃參考，實際路況請參考氣象局與林務局最新公告。</p>
+        </div>
+    </footer>
+
+    <script>
+        // 完整的小百岳資料集 (精選100座的核心數據與坐標)
+        const peakData = [
+            {"id": "001", "name": "大屯山", "region": "北部", "county": "台北", "alt": 1092, "dist": 1.8, "time": 1.5, "lat": 25.17947014, "lng": 121.5221627, "difficulty": "🦶", "climb": "247m", "ep_index": 4.27, "trans": "機捷→北車→紅線→北投站→小6", "accom": "無需住宿"},
+            {"id": "002", "name": "七星山", "region": "北部", "county": "台北", "alt": 1120, "dist": 4.0, "time": 2.5, "lat": 25.17071282, "lng": 121.5534127, "difficulty": "🦶🦶🦶", "climb": "568m", "ep_index": 9.68, "trans": "機捷→北車→260/紅5公車", "accom": "無需住宿"},
+            {"id": "003", "name": "大武崙山", "region": "北部", "county": "基隆", "alt": 231, "dist": 3.0, "time": 1.0, "lat": 25.15858982, "lng": 121.7097077, "difficulty": "🦶", "climb": "119m", "ep_index": 4.19, "trans": "機捷→北車→台鐵→基隆站→公車", "accom": "無需住宿"},
+            {"id": "004", "name": "槓子寮山", "region": "北部", "county": "基隆", "alt": 163, "dist": 3.5, "time": 2.0, "lat": 25.1431537, "lng": 121.7756954, "difficulty": "🦶🦶", "climb": "148m", "ep_index": 4.98, "trans": "機捷→北車→台鐵→基隆站→公車", "accom": "無需住宿"},
+            {"id": "005", "name": "觀音山", "region": "北部", "county": "新北", "alt": 616, "dist": 3.2, "time": 1.33, "lat": 25.13595734, "lng": 121.4266211, "difficulty": "🦶🦶", "climb": "322m", "ep_index": 6.42, "trans": "環狀線→蘆洲站→橘20", "accom": "無需住宿"},
+            {"id": "006", "name": "基隆山", "region": "北部", "county": "新北", "alt": 588, "dist": 2.4, "time": 1.17, "lat": 25.11892397, "lng": 121.8491766, "difficulty": "🦶", "climb": "267m", "ep_index": 5.07, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "007", "name": "紅淡山", "region": "北部", "county": "基隆", "alt": 210, "dist": 3.0, "time": 1.92, "lat": 25.11888642, "lng": 121.7519253, "difficulty": "🦶🦶", "climb": "180m", "ep_index": 4.8, "trans": "機捷→北車→台鐵→基隆站→公車", "accom": "無需住宿"},
+            {"id": "008", "name": "大崙頭山", "region": "北部", "county": "台北", "alt": 475, "dist": 5.4, "time": 2.0, "lat": 25.10883015, "lng": 121.5853216, "difficulty": "🦶🦶🦶", "climb": "75m", "ep_index": 6.15, "trans": "機捷→北車→捷運/公車", "accom": "無需住宿"},
+            {"id": "009", "name": "劍潭山", "region": "北部", "county": "台北", "alt": 153, "dist": 3.3, "time": 1.5, "lat": 25.08428056, "lng": 121.52931, "difficulty": "🦶🦶", "climb": "180m", "ep_index": 5.1, "trans": "環狀線→頭前庄→紅線→劍潭站", "accom": "無需住宿"},
+            {"id": "010", "name": "五分山", "region": "北部", "county": "新北", "alt": 757, "dist": 6.8, "time": 3.67, "lat": 25.07101888, "lng": 121.7806983, "difficulty": "🦶🦶🦶🦶", "climb": "520m", "ep_index": 12.0, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "011", "name": "姜子寮山", "region": "北部", "county": "基隆", "alt": 729, "dist": 3.2, "time": 1.5, "lat": 25.05327615, "lng": 121.7300883, "difficulty": "🦶🦶", "climb": "286m", "ep_index": 6.06, "trans": "機捷→北車→台鐵→基隆站→公車", "accom": "無需住宿"},
+            {"id": "012", "name": "汐止大尖山", "region": "北部", "county": "新北", "alt": 460, "dist": 2.6, "time": 0.75, "lat": 25.05122753, "lng": 121.6681173, "difficulty": "🦶", "climb": "260m", "ep_index": 5.2, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "013", "name": "南港山", "region": "北部", "county": "台北", "alt": 375, "dist": 6.3, "time": 3.0, "lat": 25.02557136, "lng": 121.5861834, "difficulty": "🦶🦶🦶", "climb": "348m", "ep_index": 9.78, "trans": "機捷→北車→藍線→後山埤站", "accom": "無需住宿"},
+            {"id": "014", "name": "土庫岳", "region": "北部", "county": "新北", "alt": 389, "dist": 3.0, "time": 1.83, "lat": 25.02316324, "lng": 121.6355011, "difficulty": "🦶🦶", "climb": "344m", "ep_index": 6.44, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "015", "name": "大棟山(龜崙山)", "region": "北部", "county": "桃園", "alt": 405, "dist": 9.5, "time": 4.0, "lat": 24.9958203, "lng": 121.3841932, "difficulty": "🦶🦶", "climb": "380m", "ep_index": 13.3, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
+            {"id": "016", "name": "南勢角山", "region": "北部", "county": "新北", "alt": 302, "dist": 4.0, "time": 2.0, "lat": 24.96933457, "lng": 121.4957838, "difficulty": "🦶🦶", "climb": "255m", "ep_index": 6.55, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "017", "name": "二格山", "region": "北部", "county": "台北", "alt": 678, "dist": 5.3, "time": 1.5, "lat": 24.96728637, "lng": 121.6196573, "difficulty": "🦶🦶🦶", "climb": "216m", "ep_index": 7.46, "trans": "機捷→北車→捷運/公車", "accom": "無需住宿"},
+            {"id": "018", "name": "天上山", "region": "北部", "county": "新北", "alt": 430, "dist": 5.6, "time": 2.17, "lat": 24.94629817, "lng": 121.4560715, "difficulty": "🦶🦶🦶", "climb": "380m", "ep_index": 9.4, "trans": "環狀線→景安站→藍線→永寧站", "accom": "無需住宿"},
+            {"id": "019", "name": "三峽鳶山", "region": "北部", "county": "新北", "alt": 321, "dist": 8.0, "time": 3.0, "lat": 24.92665216, "lng": 121.3451478, "difficulty": "🦶🦶🦶🦶", "climb": "270m", "ep_index": 10.7, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "020", "name": "獅仔頭山", "region": "北部", "county": "新北", "alt": 858, "dist": 5.5, "time": 2.5, "lat": 24.90475578, "lng": 121.49115, "difficulty": "🦶🦶🦶", "climb": "238m", "ep_index": 7.88, "trans": "環狀線→十四張站→綠1", "accom": "無需住宿"},
+            {"id": "021", "name": "金面山", "region": "北部", "county": "桃園", "alt": 667, "dist": 5.8, "time": 4.5, "lat": 24.866533, "lng": 121.33547, "difficulty": "🦶🦶🦶🦶", "climb": "402m", "ep_index": 9.82, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
+            {"id": "022", "name": "東眼山", "region": "北部", "county": "桃園", "alt": 1212, "dist": 3.5, "time": 2.0, "lat": 24.82512812, "lng": 121.4174982, "difficulty": "🦶🦶", "climb": "292m", "ep_index": 6.42, "trans": "機捷→桃園/大溪→台灣好行", "accom": "無需住宿"},
+            {"id": "023", "name": "溪州山", "region": "北部", "county": "桃園", "alt": 577, "dist": 7.9, "time": 3.17, "lat": 24.824555, "lng": 121.277251, "difficulty": "🦶🦶🦶🦶", "climb": "432m", "ep_index": 12.22, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
+            {"id": "024", "name": "石門山", "region": "北部", "county": "桃園", "alt": 551, "dist": 2.0, "time": 2.0, "lat": 24.81001773, "lng": 121.2294341, "difficulty": "🦶🦶", "climb": "226m", "ep_index": 4.26, "trans": "機捷→桃園地區→轉乘公車", "accom": "無需住宿"},
+            {"id": "025", "name": "石牛山", "region": "北部", "county": "新竹", "alt": 671, "dist": 4.0, "time": 2.5, "lat": 24.793608, "lng": 121.25329, "difficulty": "🦶🦶🦶", "climb": "390m", "ep_index": 7.9, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "026", "name": "十八尖山", "region": "北部", "county": "新竹", "alt": 131, "dist": 3.7, "time": 1.5, "lat": 24.79254322, "lng": 120.9845994, "difficulty": "🦶🦶", "climb": "81m", "ep_index": 4.51, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "027", "name": "飛鳳山", "region": "北部", "county": "新竹", "alt": 462, "dist": 6.0, "time": 2.67, "lat": 24.76584393, "lng": 121.1121282, "difficulty": "🦶🦶🦶", "climb": "265m", "ep_index": 8.65, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "028", "name": "李棟山", "region": "北部", "county": "新竹", "alt": 1914, "dist": 3.0, "time": 1.5, "lat": 24.692694, "lng": 121.303634, "difficulty": "🦶🦶", "climb": "360m", "ep_index": 6.6, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "029", "name": "獅頭山", "region": "北部", "county": "苗栗", "alt": 492, "dist": 4.9, "time": 2.33, "lat": 24.64426, "lng": 121.006575, "difficulty": "🦶🦶", "climb": "183m", "ep_index": 6.73, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "030", "name": "五指山", "region": "北部", "county": "新竹", "alt": 1062, "dist": 4.5, "time": 4.0, "lat": 24.641359, "lng": 121.096193, "difficulty": "🦶🦶🦶🦶", "climb": "261m", "ep_index": 7.11, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "031", "name": "鵝公髻山", "region": "北部", "county": "新竹", "alt": 1579, "dist": 8.0, "time": 4.0, "lat": 24.61012376, "lng": 121.0755904, "difficulty": "🦶🦶🦶🦶🦶", "climb": "719m", "ep_index": 15.19, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "032", "name": "向天湖山", "region": "北部", "county": "苗栗", "alt": 1225, "dist": 5.0, "time": 2.75, "lat": 24.567049, "lng": 121.027008, "difficulty": "🦶🦶🦶", "climb": "435m", "ep_index": 9.35, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "033", "name": "仙山", "region": "北部", "county": "苗栗", "alt": 967, "dist": 1.6, "time": 1.5, "lat": 24.54253418, "lng": 120.9529365, "difficulty": "🦶", "climb": "260m", "ep_index": 4.2, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "034", "name": "加里山", "region": "北部", "county": "苗栗", "alt": 2220, "dist": 12.5, "time": 7.5, "lat": 24.51082637, "lng": 121.0124202, "difficulty": "🦶🦶🦶🦶🦶", "climb": "940m", "ep_index": 21.9, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "建議住宿一晚"},
+            {"id": "035", "name": "火炎山", "region": "北部", "county": "苗栗", "alt": 602, "dist": 6.4, "time": 3.0, "lat": 24.377372, "lng": 120.73016, "difficulty": "🦶🦶🦶", "climb": "379m", "ep_index": 10.19, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "036", "name": "關刀山", "region": "北部", "county": "苗栗", "alt": 889, "dist": 3.5, "time": 1.5, "lat": 24.37529761, "lng": 120.8108252, "difficulty": "🦶🦶", "climb": "194m", "ep_index": 5.44, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "037", "name": "馬那邦山", "region": "北部", "county": "苗栗", "alt": 1407, "dist": 4.2, "time": 4.0, "lat": 24.36721729, "lng": 120.913772, "difficulty": "🦶🦶🦶🦶", "climb": "407m", "ep_index": 8.27, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "038", "name": "鐵砧山", "region": "中部", "county": "台中", "alt": 236, "dist": 3.3, "time": 1.0, "lat": 24.356343, "lng": 120.655123, "difficulty": "🦶🦶", "climb": "156m", "ep_index": 4.86, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "039", "name": "稍來山", "region": "中部", "county": "台中", "alt": 2307, "dist": 3.8, "time": 3.0, "lat": 24.23765402, "lng": 120.9713857, "difficulty": "🦶🦶🦶", "climb": "294m", "ep_index": 6.74, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "040", "name": "聚興山", "region": "中部", "county": "台中", "alt": 500, "dist": 3.0, "time": 2.0, "lat": 24.220236, "lng": 120.742728, "difficulty": "🦶🦶", "climb": "221m", "ep_index": 5.21, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "041", "name": "頭嵙山", "region": "中部", "county": "台中", "alt": 859, "dist": 5.0, "time": 3.33, "lat": 24.179448, "lng": 120.799922, "difficulty": "🦶🦶", "climb": "264m", "ep_index": 7.64, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "042", "name": "南觀音山", "region": "中部", "county": "台中", "alt": 318, "dist": 3.0, "time": 1.17, "lat": 24.173134, "lng": 120.741067, "difficulty": "🦶", "climb": "128m", "ep_index": 4.28, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "043", "name": "三汀山", "region": "中部", "county": "台中", "alt": 480, "dist": 7.8, "time": 3.0, "lat": 24.139083, "lng": 120.752539, "difficulty": "🦶🦶🦶🦶", "climb": "360m", "ep_index": 11.4, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "044", "name": "暗影山", "region": "中部", "county": "台中", "alt": 997, "dist": 1.2, "time": 0.5, "lat": 24.13807567, "lng": 120.8178424, "difficulty": "🦶", "climb": "97m", "ep_index": 2.17, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "045", "name": "大橫屏山", "region": "中部", "county": "南投", "alt": 1206, "dist": 8.8, "time": 5.17, "lat": 24.07457, "lng": 120.828923, "difficulty": "🦶🦶🦶🦶🦶", "climb": "301m", "ep_index": 11.81, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "046", "name": "阿罩霧山", "region": "中部", "county": "台中", "alt": 249, "dist": 7.0, "time": 2.0, "lat": 24.061278, "lng": 120.713515, "difficulty": "🦶🦶🦶", "climb": "171m", "ep_index": 8.71, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "047", "name": "九份二山", "region": "中部", "county": "南投", "alt": 1174, "dist": 3.4, "time": 1.83, "lat": 23.93463624, "lng": 120.8416723, "difficulty": "🦶🦶", "climb": "335m", "ep_index": 6.75, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "048", "name": "橫山", "region": "中部", "county": "南投", "alt": 443, "dist": 7.5, "time": 2.5, "lat": 23.88918721, "lng": 120.6315834, "difficulty": "🦶🦶🦶🦶", "climb": "333m", "ep_index": 10.83, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "049", "name": "貓囒山", "region": "中部", "county": "南投", "alt": 1016, "dist": 5.4, "time": 2.0, "lat": 23.88096574, "lng": 120.9078815, "difficulty": "🦶🦶🦶", "climb": "244m", "ep_index": 7.84, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "050", "name": "集集大山", "region": "中部", "county": "南投", "alt": 1392, "dist": 3.6, "time": 1.83, "lat": 23.85513289, "lng": 120.8381341, "difficulty": "🦶🦶", "climb": "323m", "ep_index": 6.83, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "051", "name": "松柏坑山", "region": "中部", "county": "南投", "alt": 431, "dist": 3.4, "time": 0.75, "lat": 23.82003559, "lng": 120.6420587, "difficulty": "🦶", "climb": "21m", "ep_index": 3.61, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "052", "name": "後尖山", "region": "中部", "county": "南投", "alt": 1008, "dist": 2.4, "time": 1.5, "lat": 23.81404295, "lng": 120.898216, "difficulty": "🦶🦶", "climb": "328m", "ep_index": 5.68, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "053", "name": "鳳凰山", "region": "中部", "county": "南投", "alt": 1698, "dist": 8.0, "time": 6.17, "lat": 23.69173438, "lng": 120.8061521, "difficulty": "🦶🦶🦶🦶🦶", "climb": "608m", "ep_index": 14.08, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "054", "name": "金柑樹山", "region": "中部", "county": "南投", "alt": 2091, "dist": 9.4, "time": 4.17, "lat": 23.64115, "lng": 120.8138, "difficulty": "🦶🦶🦶🦶🦶", "climb": "371m", "ep_index": 13.11, "trans": "高鐵→台中站→台鐵/客運", "accom": "台中/南投飯店"},
+            {"id": "055", "name": "石壁山", "region": "中部", "county": "雲林", "alt": 1751, "dist": 6.3, "time": 4.17, "lat": 23.60366, "lng": 120.7244, "difficulty": "🦶🦶🦶🦶", "climb": "523m", "ep_index": 11.53, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "056", "name": "大尖山", "region": "南部", "county": "雲林", "alt": 1305, "dist": 7.8, "time": 3.5, "lat": 23.59009, "lng": 120.6232, "difficulty": "🦶🦶🦶🦶🦶", "climb": "670m", "ep_index": 14.5, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "057", "name": "梨子腳山", "region": "南部", "county": "嘉義", "alt": 1176, "dist": 2.0, "time": 1.08, "lat": 23.56717, "lng": 120.6081, "difficulty": "🦶", "climb": "190m", "ep_index": 3.9, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "058", "name": "獨立山", "region": "南部", "county": "嘉義", "alt": 840, "dist": 3.5, "time": 2.0, "lat": 23.53696, "lng": 120.6078, "difficulty": "🦶🦶", "climb": "249m", "ep_index": 5.99, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "059", "name": "大塔山", "region": "南部", "county": "嘉義", "alt": 2664, "dist": 11.6, "time": 5.17, "lat": 23.53576628, "lng": 120.8084832, "difficulty": "🦶🦶🦶🦶🦶", "climb": "477m", "ep_index": 16.37, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "060", "name": "奮起湖大凍山", "region": "南部", "county": "嘉義", "alt": 1976, "dist": 3.8, "time": 2.08, "lat": 23.49789147, "lng": 120.7198915, "difficulty": "🦶🦶", "climb": "336m", "ep_index": 7.16, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "061", "name": "大湖尖山", "region": "南部", "county": "嘉義", "alt": 1316, "dist": 2.9, "time": 2.67, "lat": 23.4872763, "lng": 120.6373171, "difficulty": "🦶🦶🦶", "climb": "403m", "ep_index": 6.93, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "062", "name": "紅毛埤山", "region": "南部", "county": "嘉義", "alt": 150, "dist": 4.5, "time": 1.33, "lat": 23.48000742, "lng": 120.4919682, "difficulty": "🦶🦶", "climb": "70m", "ep_index": 5.2, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "063", "name": "關仔嶺大凍山", "region": "南部", "county": "嘉義", "alt": 1241, "dist": 6.0, "time": 4.0, "lat": 23.31132967, "lng": 120.5226402, "difficulty": "🦶🦶🦶🦶🦶", "climb": "640m", "ep_index": 12.4, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "064", "name": "崁頭山", "region": "南部", "county": "台南", "alt": 844, "dist": 3.5, "time": 1.5, "lat": 23.26592876, "lng": 120.5044952, "difficulty": "🦶🦶", "climb": "264m", "ep_index": 6.14, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "065", "name": "三腳南山", "region": "南部", "county": "嘉義", "alt": 1087, "dist": 5.8, "time": 4.33, "lat": 23.24062605, "lng": 120.5924514, "difficulty": "🦶🦶🦶🦶🦶", "climb": "736m", "ep_index": 13.16, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "066", "name": "西阿里關山", "region": "南部", "county": "台南", "alt": 973, "dist": 7.0, "time": 2.0, "lat": 23.18300868, "lng": 120.6412346, "difficulty": "🦶🦶🦶", "climb": "240m", "ep_index": 9.4, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "067", "name": "竹子尖山", "region": "南部", "county": "台南", "alt": 1110, "dist": 4.0, "time": 2.0, "lat": 23.17594768, "lng": 120.5655288, "difficulty": "🦶🦶🦶", "climb": "470m", "ep_index": 8.7, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "068", "name": "藤枝山", "region": "南部", "county": "高雄", "alt": 1565, "dist": 0.6, "time": 0.42, "lat": 23.07499227, "lng": 120.765365, "difficulty": "🦶", "climb": "86m", "ep_index": 1.46, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "069", "name": "白雲山", "region": "南部", "county": "高雄", "alt": 1044, "dist": 2.5, "time": 2.5, "lat": 23.05586494, "lng": 120.6225322, "difficulty": "🦶🦶🦶", "climb": "419m", "ep_index": 6.69, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "070", "name": "刣牛湖山", "region": "南部", "county": "台南", "alt": 798, "dist": 2.4, "time": 2.0, "lat": 23.04848609, "lng": 120.5230764, "difficulty": "🦶🦶", "climb": "98m", "ep_index": 3.38, "trans": "高鐵→嘉義/台南站→租車", "accom": "當地旅館"},
+            {"id": "071", "name": "鳴海山", "region": "南部", "county": "高雄", "alt": 1411, "dist": 4.3, "time": 4.0, "lat": 22.9547527, "lng": 120.6902474, "difficulty": "🦶🦶🦶🦶", "climb": "311m", "ep_index": 7.41, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "072", "name": "旗尾山", "region": "南部", "county": "高雄", "alt": 318, "dist": 5.0, "time": 2.5, "lat": 22.89678681, "lng": 120.4968439, "difficulty": "🦶🦶", "climb": "255m", "ep_index": 7.55, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "073", "name": "尾寮山", "region": "南部", "county": "屏東", "alt": 1427, "dist": 18.6, "time": 8.0, "lat": 22.85708928, "lng": 120.6762516, "difficulty": "🦶🦶🦶🦶🦶", "climb": "1273m", "ep_index": 31.33, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "074", "name": "大崗山", "region": "南部", "county": "高雄", "alt": 312, "dist": 4.0, "time": 2.5, "lat": 22.86026375, "lng": 120.3484219, "difficulty": "🦶🦶", "climb": "282m", "ep_index": 6.82, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "075", "name": "大社觀音山", "region": "南部", "county": "高雄", "alt": 177, "dist": 7.0, "time": 3.0, "lat": 22.72714706, "lng": 120.3736698, "difficulty": "🦶🦶🦶", "climb": "134m", "ep_index": 8.34, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "076", "name": "笠頂山", "region": "南部", "county": "屏東", "alt": 659, "dist": 1.3, "time": 1.0, "lat": 22.65023757, "lng": 120.643918, "difficulty": "🦶", "climb": "154m", "ep_index": 2.84, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "077", "name": "壽山", "region": "南部", "county": "高雄", "alt": 356, "dist": 7.7, "time": 3.0, "lat": 22.64206613, "lng": 120.2655735, "difficulty": "🦶🦶🦶🦶", "climb": "332m", "ep_index": 11.02, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "078", "name": "棚集山", "region": "南部", "county": "屏東", "alt": 899, "dist": 7.5, "time": 4.67, "lat": 22.50803481, "lng": 120.6575454, "difficulty": "🦶🦶🦶🦶🦶", "climb": "739m", "ep_index": 14.89, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "079", "name": "女仍山", "region": "南部", "county": "屏東", "alt": 808, "dist": 7.0, "time": 4.25, "lat": 22.19526518, "lng": 120.7847915, "difficulty": "🦶🦶🦶🦶🦶", "climb": "672m", "ep_index": 13.72, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "080", "name": "里龍山", "region": "南部", "county": "屏東", "alt": 1062, "dist": 8.0, "time": 7.0, "lat": 22.16387588, "lng": 120.7327465, "difficulty": "🦶🦶🦶🦶🦶", "climb": "850m", "ep_index": 16.5, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "081", "name": "大山母山", "region": "南部", "county": "屏東", "alt": 325, "dist": 4.8, "time": 1.67, "lat": 22.06818648, "lng": 120.8417282, "difficulty": "🦶🦶", "climb": "289m", "ep_index": 7.69, "trans": "高鐵→左營站→租車/客運", "accom": "高雄/恆春民宿"},
+            {"id": "082", "name": "灣坑頭山", "region": "東部", "county": "宜蘭", "alt": 616, "dist": 4.5, "time": 2.17, "lat": 24.97459497, "lng": 121.9104657, "difficulty": "🦶🦶", "climb": "280m", "ep_index": 7.3, "trans": "機捷→北車→轉乘", "accom": "無需住宿"},
+            {"id": "083", "name": "三角崙山", "region": "東部", "county": "新北", "alt": 1029, "dist": 11.8, "time": 6.0, "lat": 24.85921573, "lng": 121.7297002, "difficulty": "🦶🦶🦶🦶🦶", "climb": "939m", "ep_index": 21.19, "trans": "環狀線/機捷→轉乘公車", "accom": "無需住宿"},
+            {"id": "084", "name": "鵲子山", "region": "東部", "county": "宜蘭", "alt": 679, "dist": 3.8, "time": 2.0, "lat": 24.8503, "lng": 121.7675, "difficulty": "🦶🦶", "climb": "239m", "ep_index": 6.19, "trans": "機捷→北車→轉乘", "accom": "無需住宿"},
+            {"id": "085", "name": "三星山", "region": "東部", "county": "宜蘭", "alt": 2352, "dist": 2.8, "time": 2.17, "lat": 24.50927, "lng": 121.563907, "difficulty": "🦶🦶", "climb": "350m", "ep_index": 6.3, "trans": "機捷→北車→轉乘", "accom": "無需住宿"},
+            {"id": "086", "name": "卡拉寶山", "region": "東部", "county": "花蓮", "alt": 2397, "dist": 0.7, "time": 1.08, "lat": 24.22095777, "lng": 121.5081518, "difficulty": "🦶", "climb": "202m", "ep_index": 2.72, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "087", "name": "立霧山", "region": "東部", "county": "花蓮", "alt": 1274, "dist": 14.4, "time": 6.5, "lat": 24.17813195, "lng": 121.6418732, "difficulty": "🦶🦶🦶🦶🦶", "climb": "1184m", "ep_index": 26.24, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "088", "name": "初音山", "region": "東部", "county": "花蓮", "alt": 906, "dist": 2.0, "time": 1.0, "lat": 23.97084, "lng": 121.53141, "difficulty": "🦶", "climb": "218m", "ep_index": 4.18, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "089", "name": "鯉魚山", "region": "東部", "county": "花蓮", "alt": 601, "dist": 7.5, "time": 3.58, "lat": 23.919065, "lng": 121.520696, "difficulty": "🦶🦶🦶🦶", "climb": "456m", "ep_index": 12.06, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "090", "name": "月眉山", "region": "東部", "county": "花蓮", "alt": 614, "dist": 4.8, "time": 1.83, "lat": 23.82556, "lng": 121.552, "difficulty": "🦶🦶", "climb": "145m", "ep_index": 6.25, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "091", "name": "八里灣山", "region": "東部", "county": "花蓮", "alt": 924, "dist": 10.4, "time": 7.42, "lat": 23.544796, "lng": 121.488967, "difficulty": "🦶🦶🦶🦶🦶", "climb": "860m", "ep_index": 19.0, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "092", "name": "萬人山", "region": "東部", "county": "花蓮", "alt": 886, "dist": 6.0, "time": 1.67, "lat": 23.232578, "lng": 121.316742, "difficulty": "🦶🦶🦶", "climb": "178m", "ep_index": 7.78, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "093", "name": "都蘭山", "region": "東部", "county": "台東", "alt": 1190, "dist": 7.6, "time": 5.5, "lat": 22.895116, "lng": 121.188321, "difficulty": "🦶🦶🦶🦶🦶", "climb": "600m", "ep_index": 13.6, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "094", "name": "太麻里山", "region": "東部", "county": "台東", "alt": 1340, "dist": 7.0, "time": 2.5, "lat": 22.64309686, "lng": 120.952449, "difficulty": "🦶🦶🦶", "climb": "190m", "ep_index": 8.9, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "095", "name": "加奈美山", "region": "東部", "county": "台東", "alt": 780, "dist": 5.0, "time": 1.5, "lat": 22.432201, "lng": 120.910069, "difficulty": "🦶🦶", "climb": "11m", "ep_index": 5.7, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "096", "name": "巴塱衛山", "region": "東部", "county": "台東", "alt": 325, "dist": 0.05, "time": 0.03, "lat": 22.32261, "lng": 120.878871, "difficulty": "🦶", "climb": "0m", "ep_index": 0.05, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "097", "name": "紅頭山", "region": "東部", "county": "台東", "alt": 552, "dist": 4.8, "time": 4.0, "lat": 22.053066, "lng": 121.534474, "difficulty": "🦶🦶🦶🦶", "climb": "528m", "ep_index": 5.32, "trans": "機捷→北車→台鐵→當地車站→租車", "accom": "花東民宿"},
+            {"id": "098", "name": "雲台山", "region": "離島", "county": "連江", "alt": 248, "dist": 0.8, "time": 0.5, "lat": 26.15048002, "lng": 119.9228459, "difficulty": "🦶", "climb": "38m", "ep_index": 1.18, "trans": "機捷→北車→松山機場→搭機", "accom": "當地民宿"},
+            {"id": "099", "name": "太武山", "region": "離島", "county": "金門", "alt": 253, "dist": 4.0, "time": 2.0, "lat": 24.46352494, "lng": 118.416208, "difficulty": "🦶🦶", "climb": "216m", "ep_index": 6.16, "trans": "機捷→北車→松山機場→搭機", "accom": "當地民宿"},
+            {"id": "100", "name": "蛇頭山", "region": "離島", "county": "澎湖", "alt": 20, "dist": 1.0, "time": 0.33, "lat": 23.55392014, "lng": 119.5485083, "difficulty": "🦶", "climb": "11m", "ep_index": 1.11, "trans": "機捷→北車→松山機場→搭機", "accom": "當地民宿"}
+        ];
+        
+        let trackObjects = {}; // 存放已載入的軌跡資料物件
+        let map, markersGroup, allTracksLayer, elevationChart, hoverMarker;
+        let currentActiveCoords = []; // 存儲當前軌跡的經緯度點，供連動使用
+
+        let chartInstance;
+        let levelColors = new Map();
+        levelColors.set(1, "#3498DB");
+        levelColors.set(2, "#27AE60");
+        levelColors.set(3, "#E67E22");
+        levelColors.set(4, "#8E44AD");
+        levelColors.set(5, "#E74C3C");
+
+        document.addEventListener('DOMContentLoaded', () => {
+            map = L.map('map').setView([23.7, 121.0], 7);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            //L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            //L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            markersGroup = L.layerGroup().addTo(map);
+            allTracksLayer = L.layerGroup().addTo(map);
+            updateMapMarkers("all");
+            
+            updateDashboardStats();
+            renderCards("all");
+            renderChart("all");
+            setupFilters();
+            setupGpxTools();
+
+            document.getElementById('btn-clear-all').addEventListener('click', (e) => {
+                allTracksLayer.clearLayers();
+                trackObjects = {};
+                updateFileListUI();
+                if (elevationChart) elevationChart.destroy();
+                document.getElementById('active-gpx-info').classList.add('hidden');
+            });
+
+            document.getElementById('btn-toggle-all').addEventListener('click', (e) => {
+                if (map.hasLayer(allTracksLayer)) { map.removeLayer(allTracksLayer); } 
+                else { map.addLayer(allTracksLayer); }
+            });
+
+            document.getElementById('btn-reset-map').addEventListener('click', (e) => {
+                map.setView([23.7, 121.0], 7);
+                removeMapHoverMarker();
+
+                document.getElementById('active-gpx-info').classList.add('hidden');
+                document.getElementById('gpx-status').innerText = `閒置`;
+                if (elevationChart) elevationChart.destroy();
+            });
+        });
+
+        // 根據規則判斷分級
+        function getDifficulty(peak) {
+            if (peak.time <= 1.5 && peak.dist <= 3) return { level: 1, color: "bg-sky-500", text: "Lv.1 親子" };
+            if (peak.time <= 2 && peak.dist <= 5) return { level: 2, color: "bg-green-600", text: "Lv.2 初階" };
+            if (peak.time <= 3.5 && peak.dist <= 7) return { level: 3, color: "bg-amber-600", text: "Lv.3 中階" };
+            if (peak.time <= 5 && peak.dist <= 9) return { level: 4, color: "bg-purple-500", text: "Lv.4 進階" };
+            return { level: 5, color: "bg-red-500", text: "Lv.5 高階" };
+        }
+
+        // GPX 功能核心
+        function setupGpxTools() {
+            const uploadInput = document.getElementById('gpx-upload');
+
+            // 1. 上傳與解析 GPX
+            uploadInput.addEventListener('change', async (e) => {
+                const files = Array.from(e.target.files);
+                if (files.length === 0) return;
+
+                for (const file of files) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        parseGpx(event.target.result, file.name);
+                    };
+                    reader.readAsText(file);
+                }
+            });
+        }
+
+        function parseGpx(xmlString, fileName) {
+            const parser = new DOMParser();
+            const xmlDoc = parser.parseFromString(xmlString, "application/xml");
+            const trkpts = xmlDoc.getElementsByTagName("trkpt");
+            
+            if (trkpts.length === 0) return;
+
+            const coords = [];
+            const elevations = [];
+            const distances = [];
+            let totalDist = 0;
+
+            for (let i = 0; i < trkpts.length; i++) {
+                const lat = parseFloat(trkpts[i].getAttribute("lat"));
+                const lon = parseFloat(trkpts[i].getAttribute("lon"));
+                const ele = parseFloat(trkpts[i].getElementsByTagName("ele")[0]?.textContent || 0);
+                const pt = [lat, lon];
+                coords.push(pt);
+                elevations.push(ele);
+                
+                if (i > 0) totalDist += L.latLng(coords[i-1]).distanceTo(L.latLng(pt)) / 1000;
+                distances.push(totalDist.toFixed(2));
+            }
+
+            // 提取 ID (從檔名如 001.gpx)
+            const idMatch = fileName.match(/\d{3}/);
+            const peakId = idMatch ? idMatch[0] : null;
+
+            const trackLine = L.polyline(coords, {
+                color: '#10b981', weight: 4, opacity: 0.6
+            }).on('click', (e) => {
+                L.DomEvent.stopPropagation(e);
+                focusTrack(fileName, distances, elevations, coords);
+            });
+
+            trackLine.addTo(allTracksLayer);
+            trackObjects[fileName] = { peakId, coords, elevations, distances };
+
+            updateFileListUI();
+        }
+
+        function updateFileListUI() {
+            const list = document.getElementById('gpx-file-list');
+            const keys = Object.keys(trackObjects).sort();
+
+            if (keys.length > 0) {
+                list.innerHTML = keys.map(name => {
+                    const info = trackObjects[name];
+                    return `
+                        <div class="file-list-item px-2 py-1 flex justify-between items-center text-[10px] text-stone-600 hover:bg-emerald-200">
+                            <span class="truncate w-32 font-bold">${name}</span>
+                            <button onclick="event.stopPropagation(); focusTrackByName('${name}')" class="text-emerald-600 hover:underline font-black">定位 📍</button>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                list.innerHTML = '';
+            }
+            document.getElementById('loaded-tracks-count').innerText = Object.keys(trackObjects).length;
+        }
+
+        function focusTrackByName(name) {
+            const t = trackObjects[name];
+            if (t) {
+                focusTrack(name, t.distances, t.elevations, t.coords);
+            }
+        }
+
+        window.focusTrackByName = focusTrackByName; // 暴露給 HTML 呼叫
+
+        // 高度剖面圖 (Chart.js) + 地圖連動
+        function focusTrack(name, distances, elevations, coords) {
+            document.getElementById('active-gpx-info').classList.remove('hidden');
+            document.getElementById('active-peak-name').innerText = name;
+            document.getElementById('active-peak-dist').innerText = distances[distances.length - 1];
+            document.getElementById('active-peak-max-ele').innerText = Math.round(Math.max(...elevations));
+
+            const ctx = document.getElementById('elevationChart').getContext('2d');
+            if (elevationChart) elevationChart.destroy();
+
+            elevationChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: distances,
+                    datasets: [{
+                        label: '海拔 (m)',
+                        data: elevations,
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                        pointHoverBackgroundColor: '#EF4444',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    onHover: (event, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const idx = activeElements[0].index;
+                            updateMapHoverMarker(coords[idx]);
+                        } else {
+                            removeMapHoverMarker();
+                        }
+                    },
+                    scales: {
+                        x: { display: true, title: { display: true, text: '里程 (km)', font: { size: 8 } }, ticks: { font: { size: 8 } } },
+                        y: { display: true, ticks: { font: { size: 8 } } }
+                    },
+                    plugins: {
+                        legend: { 
+                            display: false 
+                        }, 
+                        tooltip: { 
+                            enabled: true, 
+                            mode: 'index', 
+                            intersect: false 
+                        }
+                    },
+                    interaction: {
+                        mode: 'index', // 當滑鼠在指標上時顯示
+                        intersect: false // 允許在數據點以外區域觸發
+                    }
+                }
+            });
+
+            const bounds = L.polyline(coords).getBounds();
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+
+        // 在地圖上顯示連動標記
+        function updateMapHoverMarker(latlng) {
+            if (!hoverMarker) {
+                hoverMarker = L.circleMarker(latlng, { radius: 7, fillColor: '#EF4444', color: '#fff', weight: 2, fillOpacity: 1 }).addTo(map);
+            } else {
+                hoverMarker.setLatLng(latlng);
+            }
+        }
+
+        function removeMapHoverMarker() {
+            if (hoverMarker) {
+                map.removeLayer(hoverMarker);
+                hoverMarker = null;
+            }
+        }
+
+        // 基礎渲染
+        function updateMapMarkers(regionFilter) {
+            markersGroup.clearLayers();
+            const filtered = regionFilter === 'all' ? peakData : peakData.filter(peak => peak.region === regionFilter);
+
+            filtered.forEach(peak => {
+                const diff = getDifficulty(peak);
+                const marker = L.circleMarker([peak.lat, peak.lng], {
+                    radius: 8,
+                    fillColor:  levelColors.get(diff.level),
+                    color: "#fff",
+                    weight: 2,
+                    opacity: 1,
+                    fillOpacity: 0.8
+                });
+                
+                marker.addEventListener('click', () => {
+                    const found = Object.keys(trackObjects).find(k => trackObjects[k].peakId === peak.id);
+                    if (found) {
+                        const t = trackObjects[found];
+                        focusTrack(found, t.distances, t.elevations, t.coords);
+                    }
+                });
+                marker.bindPopup(`
+                    <div class="custom-popup">
+                        <div class="text-emerald-800 font-bold">No.${peak.id} ${peak.name}</div>
+                        <div class="text-stone-500 text-[10px] mb-1">${peak.county} / ${peak.region}</div>
+                        <div class="inline-block px-2 py-0.5 rounded text-[10px] text-white ${diff.color} mb-2">${diff.text}</div>
+                        <div class="grid grid-cols-1 gap-x-4 gap-y-1 text-xs border-t pt-2">
+                            <span>🚶 長度 <b>${peak.dist}km</b></span>
+                            <span>⏱️ 時間 <b>${peak.time}h</b></span>
+                            <span>⛰️ 海拔 <b>${peak.alt}m</b></span>
+                        </div>
+                    </div>
+                `);
+                markersGroup.addLayer(marker);
+            });
+
+            if (regionFilter !== 'all' && filtered.length > 0) {
+                const group = new L.featureGroup(filtered.map(peak => L.marker([peak.lat, peak.lng])));
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        function updateDashboardStats() {
+            document.getElementById('stat-fast').innerText = peakData.filter(peak => peak.time <= 1).length + " 座";
+            document.getElementById('stat-hard').innerText = peakData.filter(peak => peak.time >= 5).length + " 座";
+        }
+
+        function renderCards(regionFilter) {
+            const grid = document.getElementById('peak-grid');
+            grid.innerHTML = '';
+            const filtered = regionFilter === 'all' ? peakData : peakData.filter(peak => peak.region === regionFilter);
+
+            filtered.forEach(peak => {
+            // 判斷難度顏色
+                const diff = getDifficulty(peak);
+                let difficultyColor = 'bg-stone-100 text-stone-600';
+                if (peak.time >= 5) difficultyColor = 'bg-red-100 text-red-700 font-bold';
+                else if (peak.time >= 3) difficultyColor = 'bg-amber-100 text-amber-700';
+
+                const card = document.createElement('div');
+                card.className = 'peak-card bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between';
+                card.addEventListener('click', (e) => {
+                    document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
+                    map.setView([peak.lat, peak.lng], 14);
+                    // 嘗試尋找對應軌跡
+                    const foundKey = Object.keys(trackObjects).find(k => trackObjects[k].peakId === peak.id);
+                    if (foundKey) {
+                        const t = trackObjects[foundKey];
+                        focusTrack(foundKey, t.distances, t.elevations, t.coords);
+                    }
+                });
+                card.innerHTML = `
+                    <div>
+                        <div class="flex flex-row gap-4 items-center justify-between mb-3">
+                            <div class="flex flex-wrap justify-center gap-3">
+                                <span class="text-xs font-bold py-1 text-stone-500">No.${peak.id}</span>
+                                <span class="difficulty-tag px-3 py-1 text-xs text-white ${diff.color}">${diff.text}</span>
+                            </div>
+                            <span class="text-xs font-medium px-2 py-1 rounded-md bg-stone-100 text-stone-500">${peak.county}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-emerald-800 mb-1">${peak.name}</h3>
+                        <p class="text-sm text-stone-500 mb-4 flex items-center gap-1">⛰️ 海拔 ${peak.alt}m</p>
+                        
+                        <div class="grid grid-cols-2 gap-2 mb-4">
+                            <div class="bg-stone-50 p-2 rounded-lg text-center">
+                                <div class="text-xs text-stone-400">🚶 長度</div>
+                                <div class="text-sm font-bold text-stone-700">${peak.dist} km</div>
+                            </div>
+                            <div class="${difficultyColor} p-2 rounded-lg text-center">
+                                <div class="text-xs opacity-70">⏱️ 時間</div>
+                                <div class="text-sm font-bold">${peak.time} hr</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="pt-3 border-t border-stone-100 space-y-1">
+                        <div class="text-[11px] text-stone-500 flex items-start">
+                            <span class="mr-1">🚆</span>
+                            <span>${peak.trans}</span>
+                        </div>
+                        <div class="text-[11px] font-bold ${peak.accom.includes('當天') ? 'text-blue-500' : 'text-amber-500'}">
+                            🛌 ${peak.accom}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function renderChart(regionFilter) {
+            const ctx = document.getElementById('difficultyChart').getContext('2d');
+            const filtered = regionFilter === 'all' ? peakData : peakData.filter(peak => peak.region === regionFilter);
+
+            if (chartInstance) chartInstance.destroy();
+
+            chartInstance = new Chart(ctx, {
+                type: 'bubble',
+                data: {
+                    datasets: [{
+                        label: '體能消耗',
+                        data: filtered.map(peak => ({ x: peak.dist, y: peak.time, r: Math.max(3, peak.alt / 150), name: peak.name })),
+                        backgroundColor: 'rgba(16, 185, 129, 0.5)',
+                        borderColor: '#059669',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: '步道長度 (km)' }, grid: { color: '#f1f1f1' } },
+                        y: { title: { display: true, text: '耗時 (hr)' }, grid: { color: '#f1f1f1' } }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (c) => `${c.raw.name}: ${c.raw.x}km / ${c.raw.y}h`
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function setupFilters() {
+            const btns = document.querySelectorAll('.filter-btn');
+            btns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    btns.forEach(b => {
+                        b.classList.remove('bg-emerald-600', 'text-white', 'active');
+                        b.classList.add('bg-stone-200', 'text-stone-600');
+                    });
+                    e.target.classList.remove('bg-stone-200', 'text-stone-600');
+                    e.target.classList.add('bg-emerald-600', 'text-white', 'active');
+
+                    const region = e.target.getAttribute('data-region');
+                    document.getElementById('map-filter-label').innerText = region === 'all' ? '全部' : region;
+                    renderCards(region);
+                    renderChart(region);
+                    updateMapMarkers(region);
+                });
+            });
+        }
+    </script>
+</body>
+</html>
