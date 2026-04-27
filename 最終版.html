@@ -553,9 +553,9 @@
             // 自動載入小百岳GPX檔
             peakData.forEach(peak => {
                 const fileName = `${peak.id}-${peak.name}.gpx`;
-                const filePath = `/gpx/${fileName}`;
+                const filePath = `./gpx/${fileName}`;
 
-                fetch(fileName)
+                fetch(filePath)
                     .then(response => {
                         if (!response.ok) {
                             throw new Error("找不到檔案或讀取失敗");
