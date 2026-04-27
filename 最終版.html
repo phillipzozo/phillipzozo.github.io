@@ -395,7 +395,7 @@
             {"id": "025", "name": "石牛山", "region": "北部", "county": "新竹", "alt": 671, "dist": 4.0, "time": 2.5, "lat": 24.793608, "lng": 121.25329, "difficulty": "🦶🦶🦶", "climb": "390m", "ep_index": 7.9, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "026", "name": "十八尖山", "region": "北部", "county": "新竹", "alt": 131, "dist": 3.7, "time": 1.5, "lat": 24.79254322, "lng": 120.9845994, "difficulty": "🦶🦶", "climb": "81m", "ep_index": 4.51, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "027", "name": "飛鳳山", "region": "北部", "county": "新竹", "alt": 462, "dist": 6.0, "time": 2.67, "lat": 24.76584393, "lng": 121.1121282, "difficulty": "🦶🦶🦶", "climb": "265m", "ep_index": 8.65, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
-            {"id": "028", "name": "李棟山", "region": "北部", "county": "新竹", "alt": 1914, "dist": 3.0, "time": 1.5, "lat": 24.692694, "lng": 121.303634, "difficulty": "🦶🦶", "climb": "360m", "ep_index": 6.6, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
+            {"id": "028", "name": "李崠山", "region": "北部", "county": "新竹", "alt": 1914, "dist": 3.0, "time": 1.5, "lat": 24.692694, "lng": 121.303634, "difficulty": "🦶🦶", "climb": "360m", "ep_index": 6.6, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "029", "name": "獅頭山", "region": "北部", "county": "苗栗", "alt": 492, "dist": 4.9, "time": 2.33, "lat": 24.64426, "lng": 121.006575, "difficulty": "🦶🦶", "climb": "183m", "ep_index": 6.73, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "030", "name": "五指山", "region": "北部", "county": "新竹", "alt": 1062, "dist": 4.5, "time": 4.0, "lat": 24.641359, "lng": 121.096193, "difficulty": "🦶🦶🦶🦶", "climb": "261m", "ep_index": 7.11, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
             {"id": "031", "name": "鵝公髻山", "region": "北部", "county": "新竹", "alt": 1579, "dist": 8.0, "time": 4.0, "lat": 24.61012376, "lng": 121.0755904, "difficulty": "🦶🦶🦶🦶🦶", "climb": "719m", "ep_index": 15.19, "trans": "機捷→北車→台鐵→新竹/苗栗站→租車", "accom": "無需住宿"},
@@ -536,7 +536,7 @@
         function setupGpxTools() {
             const uploadInput = document.getElementById('gpx-upload');
 
-            // 1. 上傳與解析 GPX
+            // 上傳與解析 GPX
             uploadInput.addEventListener('change', async (e) => {
                 const files = Array.from(e.target.files);
                 if (files.length === 0) return;
@@ -548,6 +548,32 @@
                     };
                     reader.readAsText(file);
                 }
+            });
+
+            // 自動載入小百岳GPX檔
+            peakData.forEach(peak => {
+                const fileName = `${peak.id}-${peak.name}.gpx`;
+                const filePath = `./gpx/${fileName}`;
+
+                fetch(fileName)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error("找不到檔案或讀取失敗");
+                        }
+                        parseGpx(response.text(), fileName); // GPX 本質上是 XML 格式的文字
+                    })
+                    .then(data => {
+                        gpxData = data; // 儲存到變數中
+                        console.log("GPX 載入成功！");
+                        console.log(gpxData); // 在控制台查看內容
+                        
+                        console.log(`${fileName} 已載入`);
+                    })
+                    .catch(error => {
+                        console.error("錯誤:", error);
+                        console.log(`${fileName} 讀取失敗`);
+                    });
+                
             });
         }
 
