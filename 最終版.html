@@ -553,7 +553,7 @@
             // 自動載入小百岳GPX檔
             peakData.forEach(peak => {
                 const fileName = `${peak.id}-${peak.name}.gpx`;
-                const filePath = `./gpx/${fileName}`;
+                const filePath = `/gpx/${fileName}`;
 
                 fetch(fileName)
                     .then(response => {
