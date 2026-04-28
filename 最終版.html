@@ -607,7 +607,7 @@
             const peakId = idMatch ? idMatch[0] : null;
 
             const trackLine = L.polyline(coords, {
-                color: '#10b981', weight: 4, opacity: 0.6
+                color: '#3498DB', weight: 4, opacity: 0.8
             }).on('click', (e) => {
                 L.DomEvent.stopPropagation(e);
                 focusTrack(fileName, distances, elevations, coords);
@@ -643,6 +643,7 @@
             const t = trackObjects[name];
             if (t) {
                 focusTrack(name, t.distances, t.elevations, t.coords);
+                document.getElementById('map-section').scrollIntoView({ behavior: 'smooth' });
             }
         }
 
