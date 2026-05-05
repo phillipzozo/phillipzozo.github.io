@@ -156,6 +156,52 @@
             </div>
         </section>
 
+        <!-- 天氣預報區塊 (QPF) -->
+        <section id="weather-section" class="space-y-4">
+            <div class="flex justify-between items-end">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-emerald-600 pl-3">降雨預報 (QPF)</h2>
+                    <p class="text-stone-500 mt-1">定量降水預報 - 資料來源：<a href="https://www.cwa.gov.tw/V8/C/P/QPF.html" target="_blank" class="text-emerald-600 font-bold hover:text-emerald-800">交通部氣象署</a></p>
+                </div>
+                <div class="flex bg-stone-100 p-1 rounded-2xl gap-1">
+                    <button class="qpf-btn bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition active" data-period="6hr">6小時分段</button>
+                    <button class="qpf-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-period="12hr">12小時分段</button>
+                </div>
+            </div>
+            
+            <!-- 定量降水預報圖顯示區 -->
+            <div>
+                <div id="img-qpf-6" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_6_06.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_6_12.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_6_18.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_6_24.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                </div>
+                <div id="img-qpf-12" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 hidden">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_12.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_24.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_36.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                    <img src="https://www.cwa.gov.tw/Data/fcst_img/QPF_ChFcstPrecip_12_48.png" 
+                            alt="中央氣象署定量降水預報圖" 
+                            class="max-h-[60vh] rounded-lg shadow-lg">
+                </div>
+            </div>
+        </section>
+
         <!-- 地圖區塊 -->
         <section id="map-section" class="space-y-4">
             <div class="flex justify-between items-end">
@@ -317,7 +363,7 @@
             <div class="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <h2 class="text-2xl font-bold text-stone-800 border-l-4 border-emerald-600 pl-3">百岳清單探索</h2>
                 <div class="flex flex-wrap justify-center gap-2" id="filter-container">
-                    <button class="filter-btn active bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold" data-region="all">全部</button>
+                    <button class="filter-btn bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition active" data-region="all">全部</button>
                     <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="北部">北部</button>
                     <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="中部">中部</button>
                     <button class="filter-btn bg-stone-200 text-stone-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-green-600 hover:text-white transition" data-region="南部">南部</button>
@@ -499,6 +545,7 @@
             renderChart("all");
             setupFilters();
             setupGpxTools();
+            setupWeatherToggles();
 
             document.getElementById('btn-clear-all').addEventListener('click', (e) => {
                 allTracksLayer.clearLayers();
@@ -522,6 +569,34 @@
                 if (elevationChart) elevationChart.destroy();
             });
         });
+        
+        // --- 天氣預報分段切換 ---
+        function setupWeatherToggles() {
+            const img6 = document.getElementById('img-qpf-6');
+            const img12 = document.getElementById('img-qpf-12');
+            const btns = document.querySelectorAll('.qpf-btn');
+
+            btns.forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    btns.forEach(b => {
+                        b.classList.remove('bg-emerald-600', 'text-white', 'active');
+                        b.classList.add('bg-stone-200', 'text-stone-600');
+                    });
+                    e.target.classList.remove('bg-stone-200', 'text-stone-600');
+                    e.target.classList.add('bg-emerald-600', 'text-white', 'active');
+
+                    const period = e.target.getAttribute('data-period');
+                    if (period === '6hr') {
+                        img6.classList.remove('hidden');
+                        img12.classList.add('hidden');
+                    } else {
+                        img12.classList.remove('hidden');
+                        img6.classList.add('hidden');
+                    }
+                });
+            });
+
+        }
 
         // 根據規則判斷分級
         function getDifficulty(peak) {
