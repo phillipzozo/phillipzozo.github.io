@@ -1,277 +1,539 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>個人作品集 | 我的 GitHub 網站</title>
+    <title>Maker & Dev | 個人作品集</title>
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon"/>
+    <!-- 引入字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Tailwind CSS 並配置主題 -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
-        
-        body {
-            font-family: 'Inter', 'Noto Sans TC', sans-serif;
-            scroll-behavior: smooth;
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        accent: '#FFE66D',
+                        darkBg: '#1A1A2E',
+                        darkCard: '#16213E'
+                    }
+                }
+            }
         }
-
-        .gradient-text {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .hero-bg {
-            background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent),
-                        radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1), transparent);
-        }
-
-        .nav-blur {
-            backdrop-filter: blur(8px);
-            background-color: rgba(255, 255, 255, 0.8);
-        }
-
-        .card-hover:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入共享導航欄腳本 -->
+    <script src="js/navbar.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-900 hero-bg">
+<body class="bg-gray-50 text-gray-800 dark:bg-darkBg dark:text-gray-200 transition-colors duration-300">
 
-    <!-- 導航欄 -->
-    <nav class="fixed top-0 w-full z-50 nav-blur border-b border-slate-200">
-        <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="#" class="text-xl font-bold gradient-text">YourName.dev</a>
-            <div class="hidden md:flex space-x-8">
-                <a href="#about" class="hover:text-indigo-600 transition">關於我</a>
-                <a href="#projects" class="hover:text-indigo-600 transition">專案</a>
-                <a href="#skills" class="hover:text-indigo-600 transition">技能</a>
-                <a href="#contact" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition">聯絡我</a>
-            </div>
-            <!-- 行動端菜單按鈕 -->
-            <button class="md:hidden p-2" id="mobile-menu-btn">
-                <i data-lucide="menu"></i>
-            </button>
-        </div>
-    </nav>
+    <!-- 導航欄由 navbar.js 動態加載 -->
 
-    <!-- 英雄區 -->
-    <section class="pt-32 pb-20 px-4">
-        <div class="max-w-4xl mx-auto text-center">
-            <div class="mb-6 inline-block p-2 bg-indigo-50 text-indigo-600 rounded-full text-sm font-semibold px-4">
-                👋 你好，我是 phillip
+    <!-- Main Content Container -->
+    <main class="pt-24 pb-12 min-h-screen">
+        
+        <!-- ================= HOME PAGE ================= -->
+        <section id="page-home" class="page-section max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between mt-10">
+            <div class="w-10/12 md:w-5/12 mb-10 md:mb-0">
+                <div class="inline-block px-4 py-2 rounded-full bg-accent text-gray-900 font-bold text-sm mb-6 shadow-md transform -rotate-2">
+                    👋 你好，我是全方位開發者
+                </div>
+                <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
+                    用 <span class="text-gradient">自動化</span> 與 <br> 
+                    <span class="text-gradient">軟硬整合</span> 解決問題
+                </h1>
+                <p class="text-lg text-gray-600 dark:text-gray-400 mb-8 max-w-lg leading-relaxed">
+                    熟悉 Python、Java、PHP 前後端開發。熱愛利用 <strong>Proxmox VE</strong> 建置高可用環境、導入 <strong>AI 技術</strong> 解決複雜問題，並注重系統 <strong>資安防護</strong>。同時也熱衷於 IoT 與 3D 列印的軟硬整合實作。
+                </p>
+                <div class="flex space-x-4">
+                    <a href="#portfolio" class="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center">
+                        查看作品 <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                    <a href="https://github.com/phillipzozo" target="_blank" class="px-8 py-3 bg-white dark:bg-darkCard text-gray-800 dark:text-white rounded-full font-bold shadow-lg border border-gray-200 dark:border-gray-700 hover:shadow-xl hover:scale-105 transition-all flex items-center">
+                        <i class="fab fa-github text-xl mr-2"></i> GitHub
+                    </a>
+                </div>
             </div>
-            <h1 class="text-5xl md:text-7xl font-extrabold mb-6 tracking-tight">
-                致力於打造 <span class="gradient-text">卓越的數位體驗</span>
-            </h1>
-            <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-                我是一名網頁開發者與設計愛好者。專注於 React、Node.js 以及如何透過科技解決現實生活中的問題。
-            </p>
-            <div class="flex flex-col sm:flex-row justify-center items-center gap-4">
-                <a href="#projects" class="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition flex items-center justify-center gap-2">
-                    查看我的作品 <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                </a>
-                <a href="https://github.com" target="_blank" class="w-full sm:w-auto px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition flex items-center justify-center gap-2">
-                    <i data-lucide="github" class="w-5 h-5"></i> GitHub
-                </a>
-            </div>
-        </div>
-    </section>
-
-    <!-- 關於我區塊 -->
-    <section id="about" class="py-20 bg-white">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
-                <div class="relative">
-                    <div class="aspect-square rounded-2xl bg-slate-200 overflow-hidden">
-                         <!-- 預留照片位置，若有照片可更換 src -->
-                        <div class="w-full h-full flex items-center justify-center bg-indigo-100 text-indigo-400">
-                            <i data-lucide="user" class="w-24 h-24"></i>
+            <!-- Illustration Placeholder -->
+            <div class="w-11/12 md:w-7/12 flex justify-center relative pl-0 md:pl-10">
+                <!-- Background Blob -->
+                <div class="absolute w-96 h-96 bg-secondary rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+                <div class="absolute w-96 h-96 bg-primary rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000 top-10 right-10"></div>
+                
+                <!-- Main Graphic - 3x2 Bento Grid -->
+                <div class="relative z-10 grid grid-cols-2 lg:grid-cols-3 gap-3 lg:gap-4 transform rotate-1 p-2 w-full mt-8 md:mt-0">
+                    <!-- Row 1 -->
+                    <!-- Card 1: AI & Web Dev (Span 2 columns) -->
+                    <div class="col-span-2 lg:col-span-2 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-teal-400 to-emerald-500 border border-white/20 dark:border-gray-700">
+                        <i class="fas fa-robot absolute -bottom-6 -right-4 text-white/20 text-7xl lg:text-8xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">AI & Web 開發</span>
+                            <span class="text-teal-50 font-medium text-base lg:text-md relative z-10 mt-1">整合前後端與模型應用</span>
                         </div>
                     </div>
-                    <div class="absolute -bottom-6 -right-6 w-32 h-32 bg-indigo-600 rounded-2xl -z-10"></div>
+                    
+                    <!-- Card 2: Proxmox & Sec -->
+                    <div class="col-span-1 lg:col-span-1 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-rose-400 to-red-500 border border-white/20 dark:border-gray-700">
+                        <i class="fas fa-shield-halved absolute -bottom-4 -right-4 text-white/20 text-6xl lg:text-7xl group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">架構與資安</span>
+                            <span class="text-rose-100 font-medium text-base lg:text-md relative z-10 mt-1">PVE 高可用環境</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Row 2 -->
+                    <!-- Card 3: IoT & 3D -->
+                    <div class="col-span-1 lg:col-span-1 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-amber-400 to-orange-500 border border-white/20 dark:border-gray-700">
+                        <i class="fas fa-microchip absolute -bottom-4 -right-4 text-white/20 text-6xl lg:text-7xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">軟硬整合</span>
+                            <span class="text-amber-50 font-medium text-base lg:text-md relative z-10 mt-1">IoT 與 3D 列印</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 4: Automation (Span 2 columns) -->
+                    <div class="col-span-2 lg:col-span-2 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-indigo-400 to-purple-600 border border-white/20 dark:border-gray-700">
+                        <i class="fas fa-bolt absolute -bottom-4 -right-2 text-white/20 text-7xl lg:text-8xl group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">流程自動化</span>
+                            <span class="text-indigo-100 font-medium text-base lg:text-md relative z-10 mt-1">Python & Shell 腳本</span>
+                        </div>
+                    </div>
+
+                    <!-- Row 3 -->
+                    <!-- Card 5: Self-Hosted Services -->
+                    <div class="col-span-1 lg:col-span-1 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-cyan-400 to-blue-500 border border-white/20 dark:border-gray-700">
+                        <i class="fas fa-server absolute -bottom-4 -right-4 text-white/20 text-6xl lg:text-7xl group-hover:scale-110 group-hover:rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">自建雲服務</span>
+                            <span class="text-cyan-50 font-medium text-base lg:text-md relative z-10 mt-1">NAS & 私有雲</span>
+                        </div>
+                    </div>
+
+                     <!-- Card 6: Open Source -->
+                    <div class="col-span-1 lg:col-span-2 group relative overflow-hidden rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-1 h-32 lg:h-40 bg-gradient-to-br from-gray-700 to-gray-900 border border-white/20 dark:border-gray-700">
+                        <i class="fab fa-github absolute -bottom-6 -right-2 text-white/10 text-7xl lg:text-8xl group-hover:scale-110 group-hover:-rotate-12 transition-transform duration-500"></i>
+                        <div class="absolute inset-0 p-4 lg:p-5 flex flex-col justify-end">
+                            <span class="text-white font-bold text-2xl md:text-3xl leading-tight relative z-10 drop-shadow-sm">開源貢獻</span>
+                            <span class="text-gray-300 font-medium text-base lg:text-md relative z-10 mt-1">開源專案與社群</span>
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <h2 class="text-3xl font-bold mb-6">關於我</h2>
-                    <p class="text-lg text-slate-600 mb-6 leading-relaxed">
-                        這裡可以寫一段關於你的介紹。例如你的學歷、你對編程的熱情，或是你目前正在學習的技術。我喜歡探索新事物，並持續在技術領域深耕。
+            </div>
+        </section>
+
+        <!-- ================= PORTFOLIO PAGE ================= -->
+        <section id="page-portfolio" class="page-section hidden max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold mb-4">專案作品集</h2>
+                <p class="text-gray-600 dark:text-gray-400">從網頁應用、系統環境建置、AI 整合到硬體 IoT 解決方案。</p>
+            </div>
+
+            <!-- Portfolio Categories -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10" id="portfolio-filters">
+                <!-- Categories injected by JS -->
+            </div>
+
+            <!-- Portfolio Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="portfolio-grid">
+                <!-- Cards injected by JS -->
+            </div>
+        </section>
+
+        <!-- ================= BLOG PAGE ================= -->
+        <section id="page-blog" class="page-section hidden max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold mb-4">技術筆記與經驗分享</h2>
+                <p class="text-gray-600 dark:text-gray-400">紀錄開發踩坑日記、虛擬化環境建置、資安實務與作品案例分析。</p>
+            </div>
+
+            <!-- Blog Tags -->
+            <div class="bg-white dark:bg-darkCard p-6 rounded-3xl shadow-md border border-gray-100 dark:border-gray-800 mb-10">
+                <h3 class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4"><i class="fas fa-tags mr-2"></i>熱門標籤</h3>
+                <div class="flex flex-wrap gap-2" id="blog-tags">
+                    <!-- Tags injected by JS -->
+                </div>
+            </div>
+
+            <!-- Blog List -->
+            <div class="space-y-6" id="blog-list">
+                <!-- Articles injected by JS -->
+            </div>
+        </section>
+
+        <!-- ================= ABOUT PAGE ================= -->
+        <section id="page-about" class="page-section hidden max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white dark:bg-darkCard rounded-3xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-800 flex flex-col md:flex-row">
+                <!-- Photo/Sidebar -->
+                <div class="md:w-1/3 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 p-8 flex flex-col items-center justify-center text-center">
+                    <img src="https://placehold.co/400x400/4ECDC4/FFFFFF?text=Developer+Avatar" alt="Avatar" class="w-48 h-48 rounded-full border-4 border-white dark:border-gray-700 shadow-lg mb-6 object-cover">
+                    <h2 class="text-2xl font-bold mb-2">李宗儒 Phillip</h2>
+                    <p class="text-primary font-semibold mb-4">全端工程師 & Maker</p>
+                    <div class="flex space-x-4 mt-4">
+                        <a href="https://github.com/phillipzozo" class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-primary hover:scale-110 transition-all shadow-md"><i class="fab fa-github text-xl"></i></a>
+                        <a href="https://www.linkedin.com/in/phillip-lee-a00025195/" class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-blue-500 hover:scale-110 transition-all shadow-md"><i class="fab fa-linkedin-in text-xl"></i></a>
+                        <a href="mailto:phillipzozo2@gmail.com" class="w-10 h-10 rounded-full bg-white dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-red-500 hover:scale-110 transition-all shadow-md"><i class="fas fa-envelope text-xl"></i></a>
+                    </div>
+                </div>
+                <!-- Content -->
+                <div class="md:w-2/3 p-8 md:p-12">
+                    <h3 class="text-3xl font-extrabold mb-6 border-b-2 border-primary inline-block pb-2">關於我</h3>
+                    <p class="mb-6 leading-relaxed text-gray-600 dark:text-gray-400">
+                        我是一名熱衷於自動化、效率提升與使用者體驗的全方位開發者。具備扎實的網頁開發基礎、系統環境建置及資安防護經驗。近年更積極將 <strong>AI 模型</strong> 整合至自動化工作流與系統服務中。
+                        <br><br>
+                        在軟體之外，我也熱愛硬體實作，經常使用 3D 列印輔助製作機構，並結合 Raspberry Pi、Arduino 或 ESP32 打造物聯網裝置，享受將虛擬程式碼轉化為現實影響力的成就感。
                     </p>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="p-4 bg-slate-50 rounded-lg">
-                            <h3 class="font-bold text-indigo-600 text-2xl">2+</h3>
-                            <p class="text-sm text-slate-500">開發經驗 (年)</p>
+                    
+                    <h4 class="text-xl font-bold mb-4 mt-8"><i class="fas fa-toolbox text-secondary mr-2"></i>核心技能</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Skill Column 1 -->
+                        <div>
+                            <h5 class="font-semibold text-gray-800 dark:text-gray-200 mb-3 border-l-4 border-blue-500 pl-2">軟體與前端</h5>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-lg text-sm font-medium">Python</span>
+                                <span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded-lg text-sm font-medium">Java</span>
+                                <span class="px-3 py-1 bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300 rounded-lg text-sm font-medium">PHP</span>
+                                <span class="px-3 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300 rounded-lg text-sm font-medium">JS / HTML / CSS</span>
+                            </div>
                         </div>
-                        <div class="p-4 bg-slate-50 rounded-lg">
-                            <h3 class="font-bold text-indigo-600 text-2xl">10+</h3>
-                            <p class="text-sm text-slate-500">完成專案</p>
+                        <!-- Skill Column 2 -->
+                        <div>
+                            <h5 class="font-semibold text-gray-800 dark:text-gray-200 mb-3 border-l-4 border-green-500 pl-2">架構與硬體整合</h5>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 rounded-lg text-sm font-medium">Proxmox VE</span>
+                                <span class="px-3 py-1 bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300 rounded-lg text-sm font-medium">Docker / K8s</span>
+                                <span class="px-3 py-1 bg-cyan-100 text-cyan-800 dark:bg-cyan-900/30 dark:text-cyan-300 rounded-lg text-sm font-medium">ESP32 / Arduino</span>
+                                <span class="px-3 py-1 bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300 rounded-lg text-sm font-medium">3D Printing</span>
+                            </div>
+                        </div>
+                        <!-- Skill Column 3 -->
+                        <div>
+                            <h5 class="font-semibold text-gray-800 dark:text-gray-200 mb-3 border-l-4 border-red-500 pl-2">資安與 AI 應用</h5>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-3 py-1 bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 rounded-lg text-sm font-medium">Web 弱點分析</span>
+                                <span class="px-3 py-1 bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-300 rounded-lg text-sm font-medium">LLM API 串接</span>
+                                <span class="px-3 py-1 bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300 rounded-lg text-sm font-medium">網路隔離策略</span>
+                                <span class="px-3 py-1 bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium">Log 自動化分析</span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- 專案展示 -->
-    <section id="projects" class="py-20">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="flex justify-between items-end mb-12">
-                <div>
-                    <h2 class="text-3xl font-bold mb-2">精選作品</h2>
-                    <p class="text-slate-500">我最近參與的一些有趣專案</p>
-                </div>
-                <a href="#" class="text-indigo-600 font-semibold flex items-center gap-1 hover:underline">
-                    查看全部 <i data-lucide="external-link" class="w-4 h-4"></i>
-                </a>
-            </div>
-            
-            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- 專案卡片 1 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
-                    <div class="h-48 bg-slate-200 flex items-center justify-center">
-                        <i data-lucide="map-pin" class="w-12 h-12 text-slate-400"></i>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">台灣小百岳地圖</h3>
-                        <p class="text-slate-600 text-sm mb-4">使用 Leaflet.js、Chart.js 和 Tailwind CSS 構建的響應式地圖介面。</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">React</span>
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Node.js</span>
-                        </div>
-                        <a href="https://phillipzozo.github.io/%E6%9C%80%E7%B5%82%E7%89%88.html" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
-                    </div>
-                </div>
+    </main>
 
-                <!-- 專案卡片 2 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
-                    <div class="h-48 bg-slate-200 flex items-center justify-center">
-                        <i data-lucide="smartphone" class="w-12 h-12 text-slate-400"></i>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">天氣預報 App</h3>
-                        <p class="text-slate-600 text-sm mb-4">呼叫 OpenWeather API 顯示全球城市的實時天氣數據與 5 天預報。</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">JavaScript</span>
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">API</span>
-                        </div>
-                        <a href="#" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
-                    </div>
-                </div>
-
-                <!-- 專案卡片 3 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all card-hover">
-                    <div class="h-48 bg-slate-200 flex items-center justify-center">
-                        <i data-lucide="database" class="w-12 h-12 text-slate-400"></i>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="font-bold text-xl mb-2">任務管理系統</h3>
-                        <p class="text-slate-600 text-sm mb-4">具備 CRUD 功能的後台系統，用於追蹤個人學習進度與專案日程。</p>
-                        <div class="flex flex-wrap gap-2 mb-4">
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Vue.js</span>
-                            <span class="px-2 py-1 bg-slate-100 text-slate-600 text-xs rounded">Firebase</span>
-                        </div>
-                        <a href="#" class="text-indigo-600 text-sm font-medium flex items-center gap-1">專案詳情 <i data-lucide="chevron-right" class="w-4 h-4"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 技能區塊 -->
-    <section id="skills" class="py-20 bg-slate-900 text-white">
-        <div class="max-w-6xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-bold mb-12">技術棧</h2>
-            <div class="flex flex-wrap justify-center gap-8 md:gap-16">
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
-                        <i data-lucide="code-2" class="w-8 h-8 text-indigo-400"></i>
-                    </div>
-                    <span class="font-medium text-slate-300">Frontend</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
-                        <i data-lucide="server" class="w-8 h-8 text-purple-400"></i>
-                    </div>
-                    <span class="font-medium text-slate-300">Backend</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
-                        <i data-lucide="figma" class="w-8 h-8 text-pink-400"></i>
-                    </div>
-                    <span class="font-medium text-slate-300">UI/UX Design</span>
-                </div>
-                <div class="flex flex-col items-center">
-                    <div class="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center mb-3">
-                        <i data-lucide="git-branch" class="w-8 h-8 text-emerald-400"></i>
-                    </div>
-                    <span class="font-medium text-slate-300">Version Control</span>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 聯絡資訊 -->
-    <section id="contact" class="py-20">
-        <div class="max-w-4xl mx-auto px-4 text-center">
-            <h2 class="text-3xl font-bold mb-6">感興趣合作嗎？</h2>
-            <p class="text-slate-600 mb-10 text-lg">目前開放承接專案與職位機會，歡迎來信討論你的想法！</p>
-            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm inline-block">
-                <div class="flex flex-col md:flex-row items-center gap-8">
-                    <div class="flex items-center gap-3">
-                        <div class="w-12 h-12 bg-indigo-50 rounded-full flex items-center justify-center text-indigo-600">
-                            <i data-lucide="mail"></i>
-                        </div>
-                        <span class="text-lg font-medium">hello@yourname.com</span>
-                    </div>
-                    <div class="hidden md:block w-px h-8 bg-slate-200"></div>
-                    <div class="flex gap-4">
-                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="linkedin"></i></a>
-                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="twitter"></i></a>
-                        <a href="#" class="p-3 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 rounded-full transition"><i data-lucide="github"></i></a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 頁腳 -->
-    <footer class="py-12 border-t border-slate-200 text-center text-slate-500 text-sm">
-        <div class="max-w-6xl mx-auto px-4">
-            <p>© 2024 YourName. 使用 Tailwind CSS 與 Lucide Icons 製作</p>
+    <footer class="bg-white dark:bg-darkCard border-t border-gray-200 dark:border-gray-800 py-8 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 text-center text-gray-500 dark:text-gray-400">
+            <p>&copy; <span id="current-year"></span> MakerDev Portfolio. 充滿熱情地建立。</p>
         </div>
     </footer>
 
-    <!-- 行動端彈窗 (選配) -->
-    <div id="mobile-menu" class="fixed inset-0 bg-white z-[60] hidden flex-col items-center justify-center space-y-8 text-2xl font-bold">
-        <button id="close-menu-btn" class="absolute top-6 right-6 p-2 text-slate-900">
-            <i data-lucide="x" class="w-8 h-8"></i>
-        </button>
-        <a href="#about" class="mobile-link">關於我</a>
-        <a href="#projects" class="mobile-link">專案</a>
-        <a href="#skills" class="mobile-link">技能</a>
-        <a href="#contact" class="mobile-link">聯絡我</a>
-    </div>
-
     <script>
-        // 初始化圖標
-        lucide.createIcons();
+        // 設定當前年份
+        document.getElementById('current-year').textContent = new Date().getFullYear();
 
-        // 行動端選單邏輯
-        const menuBtn = document.getElementById('mobile-menu-btn');
-        const closeBtn = document.getElementById('close-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileLinks = document.querySelectorAll('.mobile-link');
+        // 模擬的 JSON 資料 (未來可獨立成 data.json 並使用 fetch 讀取)
+        const mockData = {
+            portfolio: [
+                {
+                    id: 1,
+                    title: "應用多功能感測器於車內安全系統",
+                    category: "IoT",
+                    tags: ["Raspberry Pi", "車內安全", "氣體感測", "酒駕防範", "疲勞駕駛", "物聯網", "LINEBot", "3D列印"],
+                    image: "img/Integrated-In-vehicle-safety-systems.png",
+                    desc: "以Raspberry Pi、窄帶物聯網 (NB-IoT)、無線定位及物理氣體感測，建構防堵酒駕、減緩疲勞、及防範孩童寵物滯留車內之即時聲光通訊安全防制系統。",
+                    link: "Integrated-In-vehicle-safety-systems/index.html"
+                },
+                {
+                    id: 2,
+                    title: "智能居家環境監控系統",
+                    category: "IoT",
+                    tags: ["ESP32-C6", "MicroPython", "氣體感測", "3D列印"],
+                    image: "img/Air_Monitor_front.jpg",
+                    desc: "完整的環境監測解決方案，集成 BME680、SCD41、PMS5003 多個傳感器，基於 Beetle ESP32-C6 運行 MicroPython，支援 OLED/LCD 雙屏顯示及數據記錄。",
+                    link: "air-monitor.html"
+                },
+                {
+                    id: 3,
+                    title: "台灣小百岳登山地圖系統",
+                    category: "Web App",
+                    tags: ["地圖應用", "GPX", "HTML/CSS/JS"],
+                    image: "img/xiao_ba_yue_screen.jpg",
+                    desc: "整合 100 條台灣經典郊山登山路線的互動地圖，支援 GPX 檔案匯入，結合高度圖、難度評級，協助登山愛好者規劃最適路線。",
+                    link: "xiao_ba_yue.html"
+                },
+                {
+                    id: 4,
+                    title: "自動化測試排程儀表板",
+                    category: "Web App",
+                    tags: ["Python", "Selenium", "PHP"],
+                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    desc: "為 QA 團隊打造的網頁儀表板，可一鍵觸發 Selenium 自動化測試，並即時產出報表。"
+                },
+                {
+                    id: 5,
+                    title: "自動化測試排程儀表板",
+                    category: "Web App",
+                    tags: ["Python", "Selenium", "PHP"],
+                    image: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    desc: "為 QA 團隊打造的網頁儀表板，可一鍵觸發 Selenium 自動化測試，並即時產出報表。"
+                },
+                {
+                    id: 6,
+                    title: "Proxmox VE 自動配置腳本",
+                    category: "DevOps",
+                    tags: ["Proxmox", "Shell", "自動化"],
+                    image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    desc: "編寫一系列 Shell 腳本，實現 PVE 虛擬機與容器的快速部署與網路自動化配置。"
+                },
+                {
+                    id: 7,
+                    title: "基於 LLM 的資安 Log 分析助手",
+                    category: "AI & Sec",
+                    tags: ["AI", "資安", "Python", "Proxmox"],
+                    image: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    desc: "在 PVE 虛擬環境中搭建日誌分析系統，結合大型語言模型 (LLM) 自動識別並告警潛在的資安威脅事件。"
+                },
+                {
+                    id: 8,
+                    title: "自走車迷宮解謎機器人",
+                    category: "Maker",
+                    tags: ["Arduino", "C++", "馬達控制"],
+                    image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    desc: "結合超音波感測器與 Arduino，設計演算法讓輪式機器人能自主導航走出實體迷宮。"
+                }
+            ],
+            blog: [
+                {
+                    id: 105,
+                    title: "在 Proxmox VE 上架設獨立 AI 節點與資安隔離實務",
+                    date: "2026-06-20",
+                    tags: ["Proxmox", "AI", "資安", "架構"],
+                    summary: "探討如何利用 PVE GPU Passthrough 建立 AI 模型訓練環境，並實作網路 VLAN 隔離與防火牆策略以確保資料安全。"
+                },
+                {
+                    id: 101,
+                    title: "[案例分析] 如何將老舊廠房設備接入 WiFi 監控？",
+                    date: "2026-06-15",
+                    tags: ["IoT", "ESP32", "解決方案"],
+                    summary: "分享近期接案經驗，探討在不破壞原有電路的情況下，利用 ESP32 與繼電器模組，實現老設備聯網的架構與心得。"
+                },
+                {
+                    id: 102,
+                    title: "Proxmox VE 8.0 居家實驗室 (HomeLab) 建置指南",
+                    date: "2026-05-20",
+                    tags: ["Proxmox", "環境建置", "教學"],
+                    summary: "從零開始安裝 PVE，並分享我如何切分虛擬網路、設定備份策略，以及優化資源分配的最佳實踐。"
+                },
+                {
+                    id: 103,
+                    title: "Python 自動化：結合 AI 摘要，每天省下 1 小時的爬蟲腳本",
+                    date: "2026-04-10",
+                    tags: ["Python", "自動化", "AI", "爬蟲"],
+                    summary: "介紹如何使用 Python 爬蟲收集每日新聞，並串接 OpenAI API 產生重點摘要，將例行資訊消化自動化。"
+                },
+                {
+                    id: 104,
+                    title: "從模型到實體：3D 列印外殼的公差設計心得",
+                    date: "2026-03-05",
+                    tags: ["3D列印", "Maker", "硬體"],
+                    summary: "分享在為電子零件設計 3D 列印外殼時，經常踩到的「公差」雷區，以及推薦的切片軟體參數設定。"
+                }
+            ]
+        };
 
-        function toggleMenu() {
-            mobileMenu.classList.toggle('hidden');
-            mobileMenu.classList.toggle('flex');
-            document.body.classList.toggle('overflow-hidden');
+        // UI 狀態
+        let currentPortfolioCategory = 'All';
+        let currentBlogTag = 'All';
+
+        // 初始化與渲染
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPortfolio();
+            renderBlogTags();
+            renderBlogList();
+            
+            // 處理初始網址路由
+            handleRoute();
+        });
+
+        // 監聽網址 Hash 變化
+        window.addEventListener('hashchange', handleRoute);
+
+        /* ================= 導覽列與單頁切換邏輯 ================= */
+        function handleRoute() {
+            // 取得當前 hash，若無則預設為 home
+            let pageId = window.location.hash.substring(1) || 'home';
+            const validPages = ['home', 'portfolio', 'blog', 'about'];
+            if (!validPages.includes(pageId)) pageId = 'home';
+
+            // 隱藏所有 section
+            document.querySelectorAll('.page-section').forEach(section => {
+                section.classList.add('hidden');
+            });
+            // 顯示目標 section
+            document.getElementById(`page-${pageId}`).classList.remove('hidden');
+
+            // 更新導覽列狀態
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                if(btn.getAttribute('data-target') === pageId) {
+                    btn.setAttribute('data-active', 'true');
+                } else {
+                    btn.setAttribute('data-active', 'false');
+                }
+            });
+            
+            // 捲動回頂部
+            window.scrollTo(0, 0);
         }
 
-        menuBtn.addEventListener('click', toggleMenu);
-        closeBtn.addEventListener('click', toggleMenu);
-        mobileLinks.forEach(link => {
-            link.addEventListener('click', toggleMenu);
-        });
+        // 監聽網址 Hash 變化
+        window.addEventListener('hashchange', handleRoute);
+
+        /* ================= 導覽列與單頁切換邏輯 ================= */
+        function renderPortfolio() {
+            const grid = document.getElementById('portfolio-grid');
+            const filtersContainer = document.getElementById('portfolio-filters');
+            
+            // 取得所有獨立分類
+            const categories = ['All', ...new Set(mockData.portfolio.map(item => item.category))];
+            
+            // 渲染過濾按鈕 (只在首次執行)
+            if(filtersContainer.innerHTML === '') {
+                categories.forEach(category => {
+                    const btn = document.createElement('button');
+                    btn.className = `px-5 py-2 rounded-full font-semibold transition-all ${category === currentPortfolioCategory ? 'bg-primary text-white shadow-md' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`;
+                    btn.innerText = category;
+                    btn.onclick = () => {
+                        currentPortfolioCategory = category;
+                        // 更新按鈕樣式
+                        Array.from(filtersContainer.children).forEach(c => {
+                            c.className = `px-5 py-2 rounded-full font-semibold transition-all ${c.innerText === category ? 'bg-primary text-white shadow-md' : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'}`;
+                        });
+                        renderPortfolio(); // 重新渲染卡片
+                    };
+                    filtersContainer.appendChild(btn);
+                });
+            }
+
+            // 過濾並渲染卡片
+            grid.innerHTML = '';
+            const filteredData = currentPortfolioCategory === 'All' 
+                ? mockData.portfolio 
+                : mockData.portfolio.filter(item => item.category === currentPortfolioCategory);
+
+            filteredData.forEach(item => {
+                const card = document.createElement('a');
+                // 增加 border-gray-200 / dark:border-gray-700 與 shadow-md 以提高卡片對比度
+                card.className = 'bg-white dark:bg-darkCard rounded-3xl overflow-hidden hover-card-effect border border-gray-100 dark:border-gray-800 cursor-pointer shadow-md flex flex-col group';
+                card.href = item.link || 'item.link';
+                card.target = '_blank';
+
+                // 生成更精緻的 Tag HTML (帶有小圓點的藥丸設計)
+                const tagsHtml = item.tags.map(tag => `
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-50 text-gray-700 border border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 mb-2 mr-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                        <span class="w-1.5 h-1.5 bg-secondary rounded-full mr-1.5"></span>${tag}
+                    </span>
+                `).join('');
+
+                card.innerHTML = `
+                    <div class="h-52 overflow-hidden relative">
+                        <!-- 暗色漸層遮罩，讓圖片在淺色或深色主題下都不會太刺眼 -->
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-10"></div>
+                        <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        
+                        <!-- 玻璃擬態分類標籤 -->
+                        <div class="absolute top-4 left-4 z-20 bg-black/40 backdrop-blur-md border border-white/30 px-3 py-1.5 rounded-full text-xs font-bold text-white shadow-lg flex items-center">
+                            <i class="fas fa-layer-group mr-2 opacity-80"></i> ${item.category}
+                        </div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <h3 class="text-xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-2">${item.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 text-sm mb-5 line-clamp-3 leading-relaxed flex-grow">${item.desc}</p>
+                        
+                        <!-- 底部 Tag 區域加上分隔線 -->
+                        <div class="flex flex-wrap mt-auto pt-4 border-t border-gray-100 dark:border-gray-800">
+                            ${tagsHtml}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ================= 部落格渲染與標籤 ================= */
+        function renderBlogTags() {
+            const tagsContainer = document.getElementById('blog-tags');
+            
+            // 攤平所有標籤並取得唯一值
+            let allTags = [];
+            mockData.blog.forEach(article => allTags.push(...article.tags));
+            const uniqueTags = ['All', ...new Set(allTags)];
+
+            tagsContainer.innerHTML = '';
+            uniqueTags.forEach(tag => {
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-1.5 rounded-full text-sm font-medium transition-all border ${tag === currentBlogTag ? 'bg-secondary border-secondary text-white shadow-md' : 'bg-transparent border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-secondary hover:text-secondary'}`;
+                btn.innerText = tag === 'All' ? '全部文章' : `#${tag}`;
+                btn.onclick = () => {
+                    currentBlogTag = tag;
+                    renderBlogTags(); // 遞迴更新樣式
+                    renderBlogList(); // 更新列表
+                };
+                tagsContainer.appendChild(btn);
+            });
+        }
+
+        function renderBlogList() {
+            const listContainer = document.getElementById('blog-list');
+            listContainer.innerHTML = '';
+
+            const filteredBlog = currentBlogTag === 'All'
+                ? mockData.blog
+                : mockData.blog.filter(article => article.tags.includes(currentBlogTag));
+
+            if (filteredBlog.length === 0) {
+                listContainer.innerHTML = `<div class="text-center py-10 text-gray-500"><i class="fas fa-folder-open text-4xl mb-4 opacity-50"></i><p>沒有找到相關標籤的文章</p></div>`;
+                return;
+            }
+
+            filteredBlog.forEach(article => {
+                const articleEl = document.createElement('article');
+                // 增加 border-gray-200 / dark:border-gray-700 與 shadow-md 以提高卡片對比度
+                articleEl.className = 'bg-white dark:bg-darkCard p-6 rounded-3xl hover-card-effect border border-gray-200 dark:border-gray-700 flex flex-col md:flex-row md:items-center justify-between gap-4 cursor-pointer group shadow-md';
+                
+                const tagsHtml = article.tags.map(tag => `<span class="text-xs font-semibold text-secondary mr-3 hover:underline">#${tag}</span>`).join('');
+
+                articleEl.innerHTML = `
+                    <div class="flex-1">
+                        <div class="flex items-center text-sm text-gray-500 dark:text-gray-400 mb-2">
+                            <i class="far fa-calendar-alt mr-2"></i> ${article.date}
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-gray-900 dark:text-white group-hover:text-primary transition-colors">${article.title}</h3>
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">${article.summary}</p>
+                        <div>${tagsHtml}</div>
+                    </div>
+                    <div class="hidden md:flex flex-shrink-0 items-center justify-center w-12 h-12 rounded-full bg-gray-50 dark:bg-gray-800 text-gray-400 group-hover:bg-primary group-hover:text-white transition-all">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                `;
+                // 點擊事件(這裡可以改成 window.location.href = `articles/${article.id}.html` )
+                articleEl.onclick = () => {
+                    console.log(`Navigating to article ${article.id}`);
+                };
+                listContainer.appendChild(articleEl);
+            });
+        }
     </script>
 </body>
 </html>

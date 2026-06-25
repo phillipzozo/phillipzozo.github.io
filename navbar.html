@@ -1,0 +1,46 @@
+<nav class="fixed w-full z-50 top-0 transition-all duration-300 backdrop-blur-md bg-white/70 dark:bg-darkBg/80 border-b border-gray-200 dark:border-gray-800" id="navbar">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-20">
+            <!-- Logo -->
+            <a href="index.html" class="flex-shrink-0 flex items-center cursor-pointer logo-link">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-xl shadow-lg"> P </div>
+                <span class="ml-3 font-bold text-xl tracking-wider">Maker<span class="text-primary">Dev</span></span>
+            </a>
+            
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex space-x-8 items-center">
+                <a href="index.html#home" class="nav-btn font-semibold hover:text-primary transition-colors pb-1" data-target="home">首頁</a>
+                <a href="index.html#portfolio" class="nav-btn font-semibold hover:text-primary transition-colors pb-1" data-target="portfolio">作品集</a>
+                <a href="index.html#blog" class="nav-btn font-semibold hover:text-primary transition-colors pb-1" data-target="blog">文章筆記</a>
+                <a href="index.html#about" class="nav-btn font-semibold hover:text-primary transition-colors pb-1" data-target="about">關於我</a>
+                
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" class="w-8 h-8 rounded-full bg-gray-50 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors shadow-inner flex items-center justify-center">
+                    <i class="fas fa-sun text-orange-400 dark:hidden"></i>
+                    <i class="fas fa-moon text-blue-300 hidden dark:block"></i>
+                </button>
+            </div>
+
+            <!-- Mobile menu button -->
+            <div class="md:hidden flex items-center space-x-4">
+                <button id="theme-toggle-mobile" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                    <i class="fas fa-sun text-orange-400 dark:hidden"></i>
+                    <i class="fas fa-moon text-blue-300 hidden dark:block"></i>
+                </button>
+                <button id="mobile-menu-btn" class="text-gray-500 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus:outline-none">
+                    <i class="fas fa-bars text-2xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white dark:bg-darkCard border-b border-gray-200 dark:border-gray-800">
+        <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="index.html#home" onclick="toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">首頁</a>
+            <a href="index.html#portfolio" onclick="toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">作品集</a>
+            <a href="index.html#blog" onclick="toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">文章筆記</a>
+            <a href="index.html#about" onclick="toggleMobileMenu()" class="block w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-gray-100 dark:hover:bg-gray-700">關於我</a>
+        </div>
+    </div>
+</nav>

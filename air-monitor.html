@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能居家溫濕度監控系統 - Air_Monitor | 個人作品集</title>
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon"/>
+    <!-- 引入字體 -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <!-- 引入 FontAwesome 圖示 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans TC', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#FF6B6B',
+                        secondary: '#4ECDC4',
+                        accent: '#FFE66D',
+                        darkBg: '#1A1A2E',
+                        darkCard: '#16213E'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- 引入共享導航欄腳本 -->
+    <script src="js/navbar.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 dark:bg-darkBg dark:text-gray-200 transition-colors duration-300">
+
+    <!-- 導航欄由 navbar.js 動態加載 -->
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-12 min-h-screen">
+        <!-- Hero Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div class="mb-8">
+                <span class="inline-block px-4 py-2 rounded-full bg-secondary/20 text-secondary font-bold text-sm mb-4">
+                    <i class="fas fa-award mr-2"></i>IoT & 硬體整合
+                </span>
+            </div>
+
+            <h1 class="text-5xl md:text-6xl font-extrabold leading-tight mb-6">
+                <span class="text-gradient">智能居家環境監控系統</span>
+            </h1>
+
+            <p class="text-xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl leading-relaxed">
+                一個完整的、基於 <strong>Beetle ESP32-C6</strong> 的多功能環境監測解決方案。整合溫濕度、氣壓、CO₂ 及粉塵監測，以 MicroPython 實現固件程式，支援多種顯示屏並內置數據記錄功能。
+            </p>
+
+            <div class="flex flex-wrap gap-3 mb-10">
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full font-semibold text-sm">
+                    <i class="fas fa-microchip text-secondary mr-2"></i>ESP32-C6
+                </span>
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full font-semibold text-sm">
+                    <i class="fas fa-python text-blue-500 mr-2"></i>MicroPython
+                </span>
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full font-semibold text-sm">
+                    <i class="fas fa-cube text-orange-500 mr-2"></i>3D 列印
+                </span>
+                <span class="px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-full font-semibold text-sm">
+                    <i class="fas fa-chart-line text-primary mr-2"></i>數據可視化
+                </span>
+            </div>
+
+            <!-- 產品實體照片預留位置 -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-800 flex items-center justify-center min-h-[300px] relative">
+                    <!-- 當圖片不存在時顯示提示文字，有圖片時會被覆蓋 -->
+                    <span class="text-gray-400 dark:text-gray-500 z-0 text-sm"><i class="fas fa-image mr-2"></i>正面照片預留位置</span>
+                    <img src="img/Air_Monitor_front.jpg" alt="Air Monitor 正面" class="absolute inset-0 w-full h-full object-cover">
+                </div>
+                <div class="rounded-2xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 bg-gray-200 dark:bg-gray-800 flex items-center justify-center min-h-[300px] relative">
+                    <!-- 當圖片不存在時顯示提示文字，有圖片時會被覆蓋 -->
+                    <span class="text-gray-400 dark:text-gray-500 z-0 text-sm"><i class="fas fa-image mr-2"></i>背面照片預留位置</span>
+                    <img src="img/Air_Monitor_back.jpg" alt="Air Monitor 背面" class="absolute inset-0 w-full h-full object-cover">
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-gray-800 text-center shadow-md">
+                    <div class="text-3xl font-bold text-secondary mb-2">4</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">多功能感測器</div>
+                </div>
+                <div class="bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-gray-800 text-center shadow-md">
+                    <div class="text-3xl font-bold text-secondary mb-2">2</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">顯示屏支援</div>
+                </div>
+                <div class="bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-gray-800 text-center shadow-md">
+                    <div class="text-3xl font-bold text-secondary mb-2">3-4</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">頁面循環顯示</div>
+                </div>
+                <div class="bg-white dark:bg-darkCard rounded-xl p-4 border border-gray-100 dark:border-gray-800 text-center shadow-md">
+                    <div class="text-3xl font-bold text-secondary mb-2">∞</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">可擴展架構</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Core Features -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <div class="mb-10">
+                <h2 class="text-3xl font-extrabold mb-3"><i class="fas fa-star text-accent mr-3"></i>核心功能特性</h2>
+                <p class="text-gray-600 dark:text-gray-400">多個智能感測器與靈活的顯示設置</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Feature 1 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-thermometer-half"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">環境四合一監測</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        BME680 感測器同時測量溫度、濕度、氣壓及 VOC 空氣品質
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ 溫度精度：±1.0°C</li>
+                        <li>✓ 濕度精度：±3% R.H.</li>
+                        <li>✓ 氣壓精度：±0.6hPa</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 2 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-wind"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">CO₂ 濃度監測</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        SCD41 光學 NDIR 傳感器檢測室內 CO₂ 水平
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ 量程：0-40000 ppm</li>
+                        <li>✓ 低功耗設計</li>
+                        <li>✓ 無需預熱</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 3 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">粉塵顆粒監測</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        PMS5003 雷射感測器實時監測空氣品質
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ PM1.0 / PM2.5 / PM10</li>
+                        <li>✓ AQI 指數計算</li>
+                        <li>✓ 自動校準</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 4 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-display"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">多屏幕支援</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        支援 SH1106 OLED 或 LCD1602 液晶顯示
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ 3-4 頁面自動循環</li>
+                        <li>✓ 自定義刷新率</li>
+                        <li>✓ I2C 通訊接口</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 5 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">數據記錄與分析</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        內置 CSV 數據記錄功能便於後期分析
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ CSV 格式導出</li>
+                        <li>✓ 時間戳記錄</li>
+                        <li>✓ 批量查詢</li>
+                    </ul>
+                </div>
+
+                <!-- Feature 6 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <div class="text-3xl mb-3 text-secondary">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="font-bold text-lg mb-2">電源優化</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                        智能省電模式大幅延長續航時間
+                    </p>
+                    <ul class="text-xs space-y-1 text-gray-500 dark:text-gray-400">
+                        <li>✓ 深度睡眠模式</li>
+                        <li>✓ 適應性刷新</li>
+                        <li>✓ 低功耗設計</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hardware Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <h2 class="text-3xl font-extrabold mb-6">
+                <i class="fas fa-hdd text-primary mr-3"></i>硬體組件列表
+            </h2>
+
+            <div class="overflow-x-auto bg-white dark:bg-darkCard rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-md">
+                <table class="spec-table">
+                    <tbody>
+                        <tr>
+                            <td class="font-bold">主開發板</td>
+                            <td>Beetle ESP32-C6（或 ESP32-C6-DevKitM-1）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">處理器</td>
+                            <td>ESP32-C6 RISC-V 160MHz + 高性能協處理器</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">無線連接</td>
+                            <td>WiFi 6、Bluetooth 5.3、Zigbee 3.0、Thread 1.3、Matter</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">環境傳感器</td>
+                            <td>BME680（溫度、濕度、氣壓、VOC）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">CO₂ 傳感器</td>
+                            <td>SCD41（光學 NDIR，量程 0-40000 ppm）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">粉塵傳感器</td>
+                            <td>PMS5003（雷射顆粒計數，PM1.0/PM2.5/PM10）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">顯示屏（選項1）</td>
+                            <td>SH1106 OLED（128x64，I2C 接口）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">顯示屏（選項2）</td>
+                            <td>LCD1602（16x2，I2C 背光模組）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">通訊協定</td>
+                            <td>I2C（環境 & 顯示傳感器）、UART（粉塵傳感器）</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">程式語言</td>
+                            <td>MicroPython 1.20+</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">功耗</td>
+                            <td>實時監測：~200mA；休眠模式：&lt;10mA</td>
+                        </tr>
+                        <tr>
+                            <td class="font-bold">外殼</td>
+                            <td>3D 列印自製設計（STL 模型自選）</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <h2 class="text-3xl font-extrabold mb-6">
+                <i class="fas fa-code-branch text-secondary mr-3"></i>系統架構與代碼組織
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6 ">
+                <!-- PCB 接線圖預留位置 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-md">
+                    <h3 class="font-bold text-lg mb-4">硬體接線圖 (PCB Layout)</h3>
+                    <div class="flex-grow rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 flex items-center justify-center min-h-[400px] relative">
+                        <!-- 當圖片不存在時顯示提示文字，有圖片時會被覆蓋 -->
+                        <span class="text-gray-400 dark:text-gray-500 z-0 text-sm"><i class="fas fa-project-diagram mr-2"></i>PCB 接線圖預留位置</span>
+                        <img src="img/Air_Monitor_PCB_line_bb.png" alt="Air Monitor PCB 接線圖" class="absolute inset-0 w-full h-full object-contain p-2">
+                    </div>
+                </div>
+
+                <!-- 模塊設計 -->
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-md flex flex-col">
+                    <h3 class="font-bold text-lg mb-4">模塊設計</h3>
+                    <pre class="flex-grow bg-gray-50 dark:bg-gray-900 p-4 rounded-lg overflow-x-auto text-sm m-0"><code>/main
+├── boot.py            # 啟動引導
+├── main.py            # 主程式入口
+├── config.py          # 配置參數 (GPIO、I2C等)
+├── bme680.py          # BME680 驅動程式
+├── scd41.py           # SCD41 CO₂ 傳感器驅動
+├── pm25.py            # PM2.5 傳感器驅動
+├── displays.py        # 顯示屏統一接口
+├── uart_debug.py      # 調試工具
+└── test_sensors.py    # 單元測試</code></pre>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-md">
+                    <h3 class="font-bold text-lg mb-4">GPIO 引腳映射</h3>
+                    <table class="spec-table">
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">接口</td>
+                                <td class="font-semibold">ESP32 PIN</td>
+                            </tr>
+                            <tr>
+                                <td>I2C SCL</td>
+                                <td>GPIO 7</td>
+                            </tr>
+                            <tr>
+                                <td>I2C SDA</td>
+                                <td>GPIO 6</td>
+                            </tr>
+                            <tr>
+                                <td>UART RX (PMS5003)</td>
+                                <td>GPIO 4</td>
+                            </tr>
+                            <tr>
+                                <td>UART TX</td>
+                                <td>GPIO 5</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 shadow-md">
+                    <h3 class="font-bold text-lg mb-4">I2C 設備地址表</h3>
+                    <table class="spec-table">
+                        <tbody>
+                            <tr>
+                                <td class="font-semibold">設備</td>
+                                <td class="font-semibold">地址</td>
+                            </tr>
+                            <tr>
+                                <td>BME680</td>
+                                <td>0x76 / 0x77</td>
+                            </tr>
+                            <tr>
+                                <td>SCD41</td>
+                                <td>0x62</td>
+                            </tr>
+                            <tr>
+                                <td>OLED (SH1106)</td>
+                                <td>0x3C / 0x3D</td>
+                            </tr>
+                            <tr>
+                                <td>LCD1602 (PCF8574)</td>
+                                <td>0x27</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Getting Started Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <h2 class="text-3xl font-extrabold mb-6">
+                <i class="fas fa-rocket text-secondary mr-3"></i>快速開始指南
+            </h2>
+
+            <div class="bg-gradient-to-r from-secondary/10 to-primary/10 rounded-3xl p-8 border border-secondary/20 dark:border-secondary/10 shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white dark:bg-darkCard rounded-xl p-6">
+                        <div class="text-2xl font-bold text-secondary mb-3">1️⃣ 準備硬體</div>
+                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            <li>✓ 焊接傳感器到開發板</li>
+                            <li>✓ 連接 I2C 與 UART 線路</li>
+                            <li>✓ 安裝顯示屏驅動</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard rounded-xl p-6">
+                        <div class="text-2xl font-bold text-secondary mb-3">2️⃣ 燒錄固件</div>
+                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            <li>✓ 下載 MicroPython 固件</li>
+                            <li>✓ 使用 Thonny IDE 安裝</li>
+                            <li>✓ 驗證 REPL 連接</li>
+                        </ul>
+                    </div>
+
+                    <div class="bg-white dark:bg-darkCard rounded-xl p-6">
+                        <div class="text-2xl font-bold text-secondary mb-3">3️⃣ 上傳代碼</div>
+                        <ul class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
+                            <li>✓ 複製 main.py 與驅動</li>
+                            <li>✓ 配置 config.py 參數</li>
+                            <li>✓ 執行並監控輸出</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-white dark:bg-darkCard rounded-xl p-6 border border-gray-100 dark:border-gray-800">
+                    <h3 class="font-bold text-lg mb-3">📖 詳細文檔</h3>
+                    <p class="text-gray-600 dark:text-gray-400 mb-4">
+                        完整的安裝、配置及故障排除文檔已包含在項目中
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <a href="https://github.com/phillipzozo/Air_Monitor" target="_blank" class="inline-flex items-center px-4 py-2 bg-primary text-white rounded-lg hover:bg-opacity-90 transition">
+                            <i class="fas fa-book mr-2"></i> 查看完整文檔
+                        </a>
+                        <a href="https://github.com/phillipzozo/Air_Monitor" target="_blank" class="inline-flex items-center px-4 py-2 bg-secondary text-white rounded-lg hover:bg-opacity-90 transition">
+                            <i class="fab fa-github mr-2"></i> GitHub 倉庫
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Advantages Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <h2 class="text-3xl font-extrabold mb-6">
+                <i class="fas fa-check-circle text-primary mr-3"></i>項目優勢
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        開源完整代碼
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        所有源代碼都是開源的，包含完整的驅動程式、測試工具及配置範例。易於二次開發與定制。
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        低功耗設計
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        支援深度睡眠模式與適應性刷新，大幅降低功耗，適合電池供電的長期監測應用。
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        模塊化架構
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        採用模塊設計，易於添加新的感測器或顯示屏。每個驅動程式都可獨立測試與替換。
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        完整文檔
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        包含快速開始、安裝配置、API 參考、架構設計及故障排除等多份詳細文檔。
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        數據記錄與分析
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        內置 CSV 數據記錄功能，方便導出至 Excel 或其他分析工具進行長期趨勢分析。
+                    </p>
+                </div>
+
+                <div class="bg-white dark:bg-darkCard rounded-2xl p-6 border border-gray-100 dark:border-gray-800 hover-card-effect shadow-md">
+                    <h3 class="font-bold text-lg mb-3 flex items-center">
+                        <span class="w-8 h-8 rounded-full bg-secondary/20 text-secondary flex items-center justify-center mr-3 font-bold">✓</span>
+                        可擴展性
+                    </h3>
+                    <p class="text-gray-600 dark:text-gray-400">
+                        支援 WiFi 雲上傳框架，可輕鬆集成 MQTT、HTTP 等協定實現遠程監控功能。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Cases Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16">
+            <h2 class="text-3xl font-extrabold mb-6">
+                <i class="fas fa-lightbulb text-accent mr-3"></i>應用場景
+            </h2>
+
+            <div class="bg-white dark:bg-darkCard rounded-3xl p-8 border border-gray-100 dark:border-gray-800 shadow-md">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary/20 text-primary">
+                                <i class="fas fa-home"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">家庭環境監控</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                實時掌握臥室、客廳、辦公室等空間的溫濕度與空氣品質，優化通風與舒適度。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-secondary/20 text-secondary">
+                                <i class="fas fa-flask"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">實驗室環境控制</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                監測實驗室溫濕度與空氣品質，確保實驗條件一致性，便於數據重現。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary/20 text-primary">
+                                <i class="fas fa-industry"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">工業應用</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                監測倉庫、製造廠房等工業空間的環境參數，實施設備預防性維護。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-secondary/20 text-secondary">
+                                <i class="fas fa-graduation-cap"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">教育研究</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                學生通過本項目學習嵌入式開發、傳感器集成、數據可視化等多個領域知識。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-primary/20 text-primary">
+                                <i class="fas fa-dna"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">種植與養殖</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                監測溫室、養殖場環境，優化植物生長或動物健康所需的環境條件。
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4">
+                        <div class="flex-shrink-0">
+                            <div class="flex items-center justify-center h-12 w-12 rounded-md bg-secondary/20 text-secondary">
+                                <i class="fas fa-hospital"></i>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg mb-1">醫療保健</h3>
+                            <p class="text-gray-600 dark:text-gray-400">
+                                監測病房、隔離室空氣品質，支持健康室內環境管理與防控需求。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Call to Action -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center">
+            <div class="bg-gradient-to-r from-primary to-secondary rounded-3xl p-12 text-white shadow-xl">
+                <h2 class="text-3xl font-extrabold mb-4">開始使用 Air_Monitor</h2>
+                <p class="text-lg opacity-90 mb-8 max-w-2xl mx-auto">
+                    立即開始構建你自己的智能環境監控系統，完整的代碼、文檔與支援已準備就緒。
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="https://github.com/phillipzozo/Air_Monitor" target="_blank" class="px-8 py-3 bg-white text-primary rounded-full font-bold hover:scale-105 transition-transform shadow-lg">
+                        <i class="fab fa-github mr-2"></i> 訪問 GitHub
+                    </a>
+                    <a href="https://github.com/phillipzozo/Air_Monitor/blob/main/documents/QUICKSTART.md" target="_blank" class="px-8 py-3 bg-white/20 border-2 border-white text-white rounded-full font-bold hover:bg-white/30 transition">
+                        <i class="fas fa-book mr-2"></i> 閱讀快速開始
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer Section -->
+        <section class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 border-t border-gray-200 dark:border-gray-800">
+            <div class="text-center">
+                <p class="text-gray-600 dark:text-gray-400 mb-4">
+                    這是本人的 IoT 軟硬整合作品範例
+                </p>
+                <div class="flex justify-center gap-4 mb-6">
+                    <a href="index.html" class="px-4 py-2 text-primary font-semibold hover:underline">
+                        <i class="fas fa-arrow-left mr-2"></i> 返回首頁
+                    </a>
+                    <a href="index.html" class="px-4 py-2 text-secondary font-semibold hover:underline">
+                        <i class="fas fa-briefcase mr-2"></i> 查看更多作品
+                    </a>
+                </div>
+                <p class="text-sm text-gray-500 dark:text-gray-500">
+                    © 2026 MakerDev | 李宗儒 Phillip Lee
+                </p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // 主題切換由 navbar.js 處理
+    </script>
+</body>
+</html>

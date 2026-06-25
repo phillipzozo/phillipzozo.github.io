@@ -1,0 +1,100 @@
+
+body { font-family: 'Inter', 'Noto Sans TC', sans-serif; }
+
+/* 隱藏捲軸但保持可捲動 */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* 卡片懸浮動畫 */
+.hover-card-effect {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.hover-card-effect:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+}
+.dark .hover-card-effect:hover {
+    box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+
+/* 漸變文字 */
+.text-gradient {
+    background: linear-gradient(to right, #FF6B6B, #4ECDC4);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* 功能列表 */
+.feature-list {
+    list-style: none;
+    padding: 0;
+}
+
+.feature-list li {
+    padding: 0.75rem 0;
+    padding-left: 2rem;
+    position: relative;
+}
+
+.feature-list li:before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: #4ECDC4;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+/* 自定義滾動條 (捲軸/滑桿) 樣式 */
+html {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 transparent;
+}
+
+html.dark {
+    scrollbar-color: #4b5563 transparent;
+}
+
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+    background: #4b5563;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #4ECDC4;
+}
+
+/* 硬體表格 */
+.spec-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.spec-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgb(229, 231, 235);
+}
+
+.dark .spec-table td {
+    border-bottom-color: rgb(55, 65, 81);
+}
+
+.spec-table td:first-child {
+    font-weight: 600;
+    color: #FF6B6B;
+    width: 30%;
+}
