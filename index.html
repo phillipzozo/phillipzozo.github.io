@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Maker & Dev | 個人作品集</title>
-    <link rel="icon" href="img/favicon.ico" type="image/x-icon"/>
-    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon"/>
+    
+    <!-- 動態生成的 SVG Favicon (符合 MakerDev 漸層風格) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23FF6B6B'/%3E%3Cstop offset='100%25' stop-color='%234ECDC4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='25' fill='url(%23g)'/%3E%3Cpath d='M 28 68 L 28 35 L 50 55 L 72 35 L 72 68' fill='none' stroke='white' stroke-width='10' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+    
     <!-- 引入字體 -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <!-- 引入 FontAwesome 圖示 -->
@@ -146,6 +148,24 @@
 
             <!-- Portfolio Grid -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" id="portfolio-grid">
+                <!-- Cards injected by JS -->
+            </div>
+        </section>
+
+        <!-- ================= TOOLS PAGE (New) ================= -->
+        <section id="page-tools" class="page-section hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-extrabold mb-4">工具與服務</h2>
+                <p class="text-gray-600 dark:text-gray-400">自行架設的實用網站工具、API 服務與微型專案。</p>
+            </div>
+
+            <!-- Tools Categories -->
+            <div class="flex flex-wrap justify-center gap-2 mb-10" id="tools-filters">
+                <!-- Categories injected by JS -->
+            </div>
+
+            <!-- Tools Grid (Smaller Cards) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5" id="tools-grid">
                 <!-- Cards injected by JS -->
             </div>
         </section>
@@ -306,6 +326,17 @@
                     desc: "結合超音波感測器與 Arduino，設計演算法讓輪式機器人能自主導航走出實體迷宮。"
                 }
             ],
+            tools: [
+                {
+                    id: 1,
+                    title: "MAX7219 顏文字點矩陣產生器",
+                    category: "Network",
+                    tags: ["MAX7219", "Python", "Arduino"],
+                    icon: "fa-solid fa-table-cells",
+                    desc: "即時產生 Python 與 Arduino 版本的二維陣列程式碼，並且提供一鍵複製功能。",
+                    link: "tools/max7219.html"
+                }
+            ],
             blog: [
                 {
                     id: 105,
@@ -347,11 +378,14 @@
 
         // UI 狀態
         let currentPortfolioCategory = 'All';
+        let currentToolTag = 'All';
         let currentBlogTag = 'All';
 
         // 初始化與渲染
         document.addEventListener('DOMContentLoaded', () => {
             renderPortfolio();
+            renderToolTags();
+            renderToolList();
             renderBlogTags();
             renderBlogList();
             
@@ -366,7 +400,7 @@
         function handleRoute() {
             // 取得當前 hash，若無則預設為 home
             let pageId = window.location.hash.substring(1) || 'home';
-            const validPages = ['home', 'portfolio', 'blog', 'about'];
+            const validPages = ['home', 'portfolio', 'tools', 'blog', 'about'];
             if (!validPages.includes(pageId)) pageId = 'home';
 
             // 隱藏所有 section
@@ -459,6 +493,77 @@
                         </div>
                     </div>
                 `;
+                grid.appendChild(card);
+            });
+        }
+
+        /* ================= 工具箱渲染與過濾 ================= */
+        function renderToolTags() {
+            const filtersContainer = document.getElementById('tools-filters');
+            
+            // 攤平所有標籤並取得唯一值
+            let allTags = [];
+            mockData.tools.forEach(item => allTags.push(...item.tags));
+            const uniqueTags = ['All', ...new Set(allTags)];
+
+            filtersContainer.innerHTML = '';
+            uniqueTags.forEach(tag => {
+                const btn = document.createElement('button');
+                btn.className = `px-4 py-1.5 text-sm rounded-full font-semibold transition-all border ${tag === currentToolTag ? 'bg-primary border-primary text-white shadow-md' : 'bg-transparent border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 hover:border-primary hover:text-primary'}`;
+                btn.innerText = tag === 'All' ? '全部工具' : `#${tag}`;
+                btn.onclick = () => {
+                    currentToolTag = tag;
+                    renderToolTags(); // 更新樣式
+                    renderToolList(); // 更新列表
+                };
+                filtersContainer.appendChild(btn);
+            });
+        }
+
+        function renderToolList() {
+            const grid = document.getElementById('tools-grid');
+            grid.innerHTML = '';
+
+            const filteredData = currentToolTag === 'All' 
+                ? mockData.tools 
+                : mockData.tools.filter(item => item.tags.includes(currentToolTag));
+
+            if (filteredData.length === 0) {
+                grid.innerHTML = `<div class="col-span-full text-center py-10 text-gray-500"><i class="fas fa-tools text-4xl mb-4 opacity-50"></i><p>沒有找到相關標籤的工具</p></div>`;
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-darkCard rounded-2xl overflow-hidden hover-card-effect border border-gray-200 dark:border-gray-700 cursor-pointer shadow-sm p-5 flex flex-col group';
+                card.href = item.link || 'item.link';
+                card.target = '_blank';
+
+                // 生成更小巧精緻的 Tag HTML
+                const tagsHtml = item.tags.map(tag => `<span class="inline-block px-2 py-1 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-medium rounded-md text-gray-500 dark:text-gray-400 mr-1.5 mb-1.5 transition-colors group-hover:border-secondary/30">#${tag}</span>`).join('');
+
+                card.innerHTML = `
+                    <div class="flex items-center mb-4">
+                        <div class="w-10 h-10 flex-shrink-0 rounded-xl bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-gray-600 dark:text-gray-300 flex items-center justify-center text-lg mr-3 group-hover:from-primary group-hover:to-secondary group-hover:text-white transition-all shadow-inner">
+                            <i class="${item.icon || 'fas fa-tools'}"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white group-hover:text-primary transition-colors line-clamp-1">${item.title}</h3>
+                    </div>
+                    <p class="text-gray-600 dark:text-gray-400 text-xs mb-5 line-clamp-2 flex-grow leading-relaxed">${item.desc}</p>
+                    
+                    <!-- 標籤區塊固定在底部 -->
+                    <div class="flex flex-wrap mt-auto">
+                        ${tagsHtml}
+                    </div>
+                `;
+                
+                card.onclick = () => {
+                    if(item.link) {
+                        window.location.href = item.link;
+                    } else {
+                        console.log(`Navigating to tool ${item.id}`);
+                    }
+                };
                 grid.appendChild(card);
             });
         }
