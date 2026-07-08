@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MAX7219 顏文字點矩陣產生器</title>
+  <title>MAX7219 顏文字批量點矩陣產生器</title>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -12,16 +12,18 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
   
-  <!-- Babel 讓瀏覽器可以解析 JSX -->
+  <!-- Babel -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
     body { background-color: #0a0a0a; color: #e5e5e5; }
-    /* 自訂卷軸樣式 */
-    ::-webkit-scrollbar { height: 8px; }
+    ::-webkit-scrollbar { height: 8px; width: 8px; }
     ::-webkit-scrollbar-track { background: #171717; border-radius: 4px; }
     ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+    input[type=range]::-webkit-slider-thumb {
+      appearance: none; width: 14px; height: 14px; background: #ef4444; border-radius: 50%; cursor: pointer;
+    }
   </style>
 </head>
 <body>
@@ -30,7 +32,7 @@
   <script type="text/babel">
     const { useState, useEffect, useRef, useCallback } = React;
 
-    // SVG 圖示元件 (取代原本的 lucide-react)
+    // SVG 圖示元件
     const IconSettings = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="7" r="3"/><circle cx="7" cy="17" r="3"/></svg>;
     const IconType = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" x2="15" y1="20" y2="20"/><line x1="12" x2="12" y1="4" y2="20"/></svg>;
     const IconMinus = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="5" x2="19" y1="12" y2="12"/></svg>;
@@ -39,77 +41,135 @@
     const IconMousePointer = () => <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z"/></svg>;
     const IconTrash = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>;
     const IconCopy = () => <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>;
+    const IconChevronLeft = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>;
+    const IconChevronRight = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>;
 
     function App() {
-      const [matrixCount, setMatrixCount] = useState(4);
-      const [grid, setGrid] = useState([]);
+      const [matrixCount, setMatrixCount] = useState(5);
       
-      const [inputText, setInputText] = useState('(・ω・)ノ');
+      // 影格狀態 (多重網格)
+      const [frames, setFrames] = useState([]);
+      const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
+      
+      // 文字設定
+      const [inputText, setInputText] = useState('(・ω・)ノ\n( ˘ ³˘)♥\n(ಠ_ಠ)');
       const [fontSize, setFontSize] = useState(8);
       const [offsetX, setOffsetX] = useState(0);
       const [offsetY, setOffsetY] = useState(0);
       
+      // 優化設定
+      const [threshold, setThreshold] = useState(128);
+      const [isBold, setIsBold] = useState(true);
+      const [fontFamily, setFontFamily] = useState('monospace');
+      const [autoSync, setAutoSync] = useState(false); // 預設關閉以防覆蓋手繪
+      
+      // 手繪設定
       const [isDrawing, setIsDrawing] = useState(false);
       const [drawMode, setDrawMode] = useState(true);
 
       const [activeTab, setActiveTab] = useState('arduino');
       const [copyStatus, setCopyStatus] = useState('');
 
+      // 初始化與更新所有影格的寬度
       useEffect(() => {
-        const newGrid = Array(8).fill(null).map(() => Array(matrixCount * 8).fill(false));
-        for (let r = 0; r < 8; r++) {
-          for (let c = 0; c < Math.min(grid[r]?.length || 0, matrixCount * 8); c++) {
-            newGrid[r][c] = grid[r][c];
-          }
-        }
-        setGrid(newGrid);
+        setFrames(prevFrames => {
+          if (prevFrames.length === 0) return [createEmptyGrid(matrixCount)];
+          
+          return prevFrames.map(oldGrid => {
+            const newGrid = createEmptyGrid(matrixCount);
+            for (let r = 0; r < 8; r++) {
+              for (let c = 0; c < Math.min(oldGrid[r]?.length || 0, matrixCount * 8); c++) {
+                newGrid[r][c] = oldGrid[r][c];
+              }
+            }
+            return newGrid;
+          });
+        });
       }, [matrixCount]);
 
-      const renderTextToGrid = () => {
-        const canvas = document.createElement('canvas');
-        const width = matrixCount * 8;
-        const height = 8;
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
+      const createEmptyGrid = (mc) => {
+        return Array(8).fill(null).map(() => Array(mc * 8).fill(false));
+      };
 
-        ctx.fillStyle = 'black';
-        ctx.fillRect(0, 0, width, height);
+      // 核心轉換邏輯：支援多行切割成多個影格
+      const renderTextToGrid = useCallback(() => {
+        const lines = inputText.split('\n').filter(line => line.length > 0);
+        if (lines.length === 0) return;
 
-        ctx.fillStyle = 'white';
-        ctx.font = `${fontSize}px "Microsoft JhengHei", "PingFang TC", monospace`;
-        ctx.textBaseline = 'middle';
-        ctx.textAlign = 'center';
-        
-        const centerX = width / 2 + offsetX;
-        const centerY = height / 2 + offsetY;
-        
-        ctx.fillText(inputText, centerX, centerY);
+        const newFrames = lines.map(line => {
+          const canvas = document.createElement('canvas');
+          const width = matrixCount * 8;
+          const height = 8;
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
 
-        const imageData = ctx.getImageData(0, 0, width, height).data;
-        
-        const newGrid = Array(8).fill(null).map(() => Array(width).fill(false));
-        
-        for (let r = 0; r < height; r++) {
-          for (let c = 0; c < width; c++) {
-            const index = (r * width + c) * 4;
-            const rValue = imageData[index];
-            const gValue = imageData[index + 1];
-            const bValue = imageData[index + 2];
-            const brightness = (rValue + gValue + bValue) / 3;
-            newGrid[r][c] = brightness > 128;
+          ctx.fillStyle = 'black';
+          ctx.fillRect(0, 0, width, height);
+
+          ctx.fillStyle = 'white';
+          const fontWeight = isBold ? 'bold ' : '';
+          ctx.font = `${fontWeight}${fontSize}px ${fontFamily}`;
+          ctx.textBaseline = 'middle';
+          ctx.textAlign = 'center';
+          
+          const centerX = width / 2 + offsetX;
+          const centerY = height / 2 + offsetY;
+          
+          ctx.fillText(line, centerX, centerY);
+
+          const imageData = ctx.getImageData(0, 0, width, height).data;
+          const frameGrid = Array(8).fill(null).map(() => Array(width).fill(false));
+          
+          for (let r = 0; r < height; r++) {
+            for (let c = 0; c < width; c++) {
+              const index = (r * width + c) * 4;
+              const brightness = (imageData[index] + imageData[index + 1] + imageData[index + 2]) / 3;
+              frameGrid[r][c] = brightness >= threshold;
+            }
           }
+          return frameGrid;
+        });
+
+        setFrames(newFrames);
+        setCurrentFrameIndex(0);
+      }, [matrixCount, inputText, fontSize, offsetX, offsetY, threshold, isBold, fontFamily]);
+
+      // 自動即時預覽功能
+      useEffect(() => {
+        if (autoSync) {
+          renderTextToGrid();
         }
-        setGrid(newGrid);
+      }, [inputText, fontSize, offsetX, offsetY, threshold, isBold, fontFamily, autoSync, renderTextToGrid]);
+
+      // 影格管理功能
+      const clearCurrentGrid = () => {
+        setFrames(prev => {
+          const newFrames = [...prev];
+          newFrames[currentFrameIndex] = createEmptyGrid(matrixCount);
+          return newFrames;
+        });
       };
 
-      const clearGrid = () => {
-        setGrid(Array(8).fill(null).map(() => Array(matrixCount * 8).fill(false)));
+      const addBlankFrame = () => {
+        setFrames(prev => [...prev, createEmptyGrid(matrixCount)]);
+        setCurrentFrameIndex(frames.length);
       };
 
+      const deleteCurrentFrame = () => {
+        if (frames.length <= 1) {
+          clearCurrentGrid();
+          return;
+        }
+        setFrames(prev => prev.filter((_, i) => i !== currentFrameIndex));
+        setCurrentFrameIndex(prev => Math.max(0, prev - 1));
+      };
+
+      // 手繪更新
       const handleMouseDown = (r, c) => {
         setIsDrawing(true);
-        const newMode = !grid[r][c];
+        const currentGrid = frames[currentFrameIndex];
+        const newMode = !currentGrid[r][c];
         setDrawMode(newMode);
         updateGridPixel(r, c, newMode);
       };
@@ -120,16 +180,16 @@
         }
       };
 
-      const handleMouseUp = () => {
-        setIsDrawing(false);
-      };
+      const handleMouseUp = () => setIsDrawing(false);
 
       const updateGridPixel = (r, c, value) => {
-        setGrid(prev => {
-          const newGrid = [...prev];
+        setFrames(prev => {
+          const newFrames = [...prev];
+          const newGrid = [...newFrames[currentFrameIndex]];
           newGrid[r] = [...newGrid[r]];
           newGrid[r][c] = value;
-          return newGrid;
+          newFrames[currentFrameIndex] = newGrid;
+          return newFrames;
         });
       };
 
@@ -138,52 +198,82 @@
         return () => window.removeEventListener('mouseup', handleMouseUp);
       }, []);
 
+      // 程式碼產生
       const generateHexData = () => {
-        const matricesHex = [];
-        for (let m = 0; m < matrixCount; m++) {
-          const matrixBytes = [];
-          for (let r = 0; r < 8; r++) {
-            let byteVal = 0;
-            for (let c = 0; c < 8; c++) {
-              if (grid[r] && grid[r][m * 8 + c]) {
-                byteVal |= (1 << (7 - c));
+        return frames.map(grid => {
+          const matricesHex = [];
+          for (let m = 0; m < matrixCount; m++) {
+            const matrixBytes = [];
+            for (let r = 0; r < 8; r++) {
+              let byteVal = 0;
+              for (let c = 0; c < 8; c++) {
+                if (grid[r] && grid[r][m * 8 + c]) {
+                  byteVal |= (1 << (7 - c));
+                }
               }
+              matrixBytes.push(`0x${byteVal.toString(16).padStart(2, '0').toUpperCase()}`);
             }
-            matrixBytes.push(`0x${byteVal.toString(16).padStart(2, '0').toUpperCase()}`);
+            matricesHex.push(matrixBytes);
           }
-          matricesHex.push(matrixBytes);
-        }
-        return matricesHex;
+          return matricesHex;
+        });
       };
 
       const generateArduinoCode = () => {
-        const hexData = generateHexData();
-        let code = `// 適用於 LedControl 等 MAX7219 函式庫的字節陣列\n`;
-        code += `#define NUM_MATRICES ${matrixCount}\n\n`;
-        code += `byte customImage[NUM_MATRICES][8] = {\n`;
-        hexData.forEach((matrix, index) => {
-          code += `  { ${matrix.join(', ')} }${index < hexData.length - 1 ? ',' : ''} // Matrix ${index}\n`;
-        });
-        code += `};`;
+        const allHexData = generateHexData();
+        let code = `// 適用於 LedControl 等 MAX7219 函式庫\n`;
+        code += `#define NUM_MATRICES ${matrixCount}\n`;
+        
+        if (frames.length === 1) {
+          code += `\nbyte customImage[NUM_MATRICES][8] = {\n`;
+          allHexData[0].forEach((matrix, index) => {
+            code += `  { ${matrix.join(', ')} }${index < allHexData[0].length - 1 ? ',' : ''} // Matrix ${index}\n`;
+          });
+          code += `};`;
+        } else {
+          code += `#define NUM_FRAMES ${frames.length}\n\n`;
+          code += `byte customImages[NUM_FRAMES][NUM_MATRICES][8] = {\n`;
+          allHexData.forEach((hexData, fIndex) => {
+            code += `  {\n`;
+            hexData.forEach((matrix, mIndex) => {
+              code += `    { ${matrix.join(', ')} }${mIndex < hexData.length - 1 ? ',' : ''} // Matrix ${mIndex}\n`;
+            });
+            code += `  }${fIndex < allHexData.length - 1 ? ',' : ''} // Frame ${fIndex}\n`;
+          });
+          code += `};`;
+        }
         return code;
       };
 
       const generatePythonCode = () => {
-        const hexData = generateHexData();
+        const allHexData = generateHexData();
         let code = `# 適用於 luma.led_matrix 或 MicroPython MAX7219 模組\n`;
-        code += `NUM_MATRICES = ${matrixCount}\n\n`;
-        code += `custom_image = [\n`;
-        hexData.forEach((matrix, index) => {
-          code += `    [${matrix.join(', ')}], # Matrix ${index}\n`;
-        });
-        code += `]`;
+        code += `NUM_MATRICES = ${matrixCount}\n`;
+        
+        if (frames.length === 1) {
+          code += `\ncustom_image = [\n`;
+          allHexData[0].forEach((matrix, index) => {
+            code += `    [${matrix.join(', ')}], # Matrix ${index}\n`;
+          });
+          code += `]`;
+        } else {
+          code += `NUM_FRAMES = ${frames.length}\n\n`;
+          code += `custom_images = [\n`;
+          allHexData.forEach((hexData, fIndex) => {
+            code += `    [\n`;
+            hexData.forEach((matrix, mIndex) => {
+              code += `        [${matrix.join(', ')}], # Matrix ${mIndex}\n`;
+            });
+            code += `    ], # Frame ${fIndex}\n`;
+          });
+          code += `]`;
+        }
         return code;
       };
 
       const copyToClipboard = () => {
         const textToCopy = activeTab === 'arduino' ? generateArduinoCode() : generatePythonCode();
         
-        // 使用傳統的 document.execCommand('copy') 來避免 iframe 中的 Permissions-Policy 限制
         const textArea = document.createElement("textarea");
         textArea.value = textToCopy;
         textArea.style.position = "fixed";
@@ -198,66 +288,89 @@
           setCopyStatus('已複製!');
         } catch (error) {
           setCopyStatus('複製失敗');
-          console.error('複製到剪貼簿時發生錯誤:', error);
         }
         
         setTimeout(() => setCopyStatus(''), 2000);
         textArea.remove();
       };
 
+      // 取得當前顯示的網格
+      const currentGrid = frames[currentFrameIndex] || createEmptyGrid(matrixCount);
+
       return (
         <div className="min-h-screen bg-neutral-950 text-neutral-200 p-4 md:p-8 font-sans selection:bg-red-500/30">
           <div className="max-w-5xl mx-auto space-y-6">
             
-            {/* Header */}
             <header className="flex flex-col md:flex-row md:items-center justify-between border-b border-neutral-800 pb-4 gap-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-500/10 rounded-lg text-red-500">
                   <IconSettings />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold text-white">MAX7219 顏文字點矩陣產生器</h1>
-                  <p className="text-sm text-neutral-400">將顏文字轉為 8x8 LED 陣列資料</p>
+                  <h1 className="text-2xl font-bold text-white">MAX7219 顏文字批量產生器</h1>
+                  <p className="text-sm text-neutral-400">支援多行輸入、多影格編輯與動畫陣列產生</p>
                 </div>
               </div>
             </header>
 
-            {/* Control Panel */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               <div className="lg:col-span-1 space-y-4 bg-neutral-900 border border-neutral-800 p-5 rounded-xl">
                 <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                  <IconType /> 文字設定
+                  <IconType /> 批量文字設定
                 </h2>
                 
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-400 mb-1">模組數量 (8x8)</label>
-                    <div className="flex items-center bg-neutral-950 rounded-lg border border-neutral-800 p-1">
-                      <button onClick={() => setMatrixCount(Math.max(1, matrixCount - 1))} className="p-2 hover:bg-neutral-800 rounded-md transition-colors">
-                        <IconMinus />
-                      </button>
-                      <span className="flex-1 text-center font-mono text-white">{matrixCount}</span>
-                      <button onClick={() => setMatrixCount(Math.min(16, matrixCount + 1))} className="p-2 hover:bg-neutral-800 rounded-md transition-colors">
-                        <IconPlus />
-                      </button>
+                <div className="space-y-4">
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">模組數量 (8x8)</label>
+                      <div className="flex items-center bg-neutral-950 rounded-lg border border-neutral-800 p-1">
+                        <button onClick={() => setMatrixCount(Math.max(1, matrixCount - 1))} className="p-2 hover:bg-neutral-800 rounded-md transition-colors"><IconMinus /></button>
+                        <span className="flex-1 text-center font-mono text-white">{matrixCount}</span>
+                        <button onClick={() => setMatrixCount(Math.min(16, matrixCount + 1))} className="p-2 hover:bg-neutral-800 rounded-md transition-colors"><IconPlus /></button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">批量輸入 (每行產生一個影格)</label>
+                      <textarea 
+                        rows="4"
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 transition-colors resize-y"
+                        placeholder="第一行文字...&#10;第二行文字..."
+                      />
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-400 mb-1">顏文字輸入</label>
-                    <input 
-                      type="text" 
-                      value={inputText}
-                      onChange={(e) => setInputText(e.target.value)}
-                      className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-red-500 transition-colors"
-                      placeholder="輸入文字..."
-                    />
+                  <div className="space-y-3 pt-3 border-t border-neutral-800">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium text-neutral-400 mb-1">字型</label>
+                        <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1.5 text-sm text-white focus:outline-none focus:border-red-500">
+                          <option value='monospace'>等寬字體</option>
+                          <option value='"Microsoft JhengHei", "PingFang TC", sans-serif'>黑體</option>
+                          <option value='"PMingLiU", "LiHei Pro", serif'>明體</option>
+                        </select>
+                      </div>
+                      <div className="flex items-end pb-1.5">
+                        <label className="flex items-center gap-2 text-sm text-neutral-300 cursor-pointer hover:text-white">
+                          <input type="checkbox" checked={isBold} onChange={(e) => setIsBold(e.target.checked)} className="rounded border-neutral-700 bg-neutral-900 accent-red-500 w-4 h-4" /> 套用粗體
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex justify-between items-center mb-1">
+                        <label className="block text-xs font-medium text-neutral-400">線條粗細微調 (二值化閾值)</label>
+                      </div>
+                      <input type="range" min="10" max="240" value={threshold} onChange={(e) => setThreshold(Number(e.target.value))} className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-red-500" />
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-neutral-800">
                     <div>
-                      <label className="block text-xs font-medium text-neutral-400 mb-1">字體大小</label>
+                      <label className="block text-xs font-medium text-neutral-400 mb-1">大小</label>
                       <input type="number" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1.5 text-center text-sm" />
                     </div>
                     <div>
@@ -270,24 +383,41 @@
                     </div>
                   </div>
 
-                  <button 
-                    onClick={renderTextToGrid}
-                    className="w-full mt-2 bg-red-600 hover:bg-red-500 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
-                  >
-                    <IconDownload /> 轉換至點矩陣
-                  </button>
+                  <div className="space-y-2 pt-1">
+                    <label className="flex items-center justify-between text-sm text-neutral-300 cursor-pointer p-2.5 bg-neutral-950/50 rounded-lg border border-neutral-800 hover:border-neutral-700 transition-colors">
+                      <div>
+                        即時預覽 
+                        <span className="block text-[10px] text-neutral-500">開啟將會在輸入時覆蓋手動修改的影格</span>
+                      </div>
+                      <input type="checkbox" checked={autoSync} onChange={(e) => setAutoSync(e.target.checked)} className="accent-red-500 w-4 h-4" />
+                    </label>
+
+                    {!autoSync && (
+                      <button onClick={renderTextToGrid} className="w-full bg-red-600 hover:bg-red-500 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <IconDownload /> 批量轉換至點矩陣
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              {/* Matrix Preview */}
+              {/* Matrix Preview Area */}
               <div className="lg:col-span-2 space-y-4 bg-neutral-900 border border-neutral-800 p-5 rounded-xl flex flex-col min-w-0">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-                    <IconMousePointer /> 預覽與手繪區
+                    <IconMousePointer /> 影格編輯區
                   </h2>
-                  <button onClick={clearGrid} className="text-xs flex items-center gap-1 text-neutral-400 hover:text-red-400 transition-colors px-2 py-1 bg-neutral-800 rounded-md">
-                    <IconTrash /> 清空網格
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center bg-neutral-950 rounded-lg border border-neutral-800 p-1">
+                      <button onClick={() => setCurrentFrameIndex(Math.max(0, currentFrameIndex - 1))} disabled={currentFrameIndex === 0} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 disabled:opacity-30"><IconChevronLeft /></button>
+                      <span className="text-xs px-2 font-mono whitespace-nowrap">影格 {currentFrameIndex + 1} / {frames.length || 1}</span>
+                      <button onClick={() => setCurrentFrameIndex(Math.min(frames.length - 1, currentFrameIndex + 1))} disabled={currentFrameIndex === frames.length - 1 || frames.length === 0} className="p-1 hover:bg-neutral-800 rounded text-neutral-400 disabled:opacity-30"><IconChevronRight /></button>
+                    </div>
+                    <button onClick={addBlankFrame} title="新增空白影格" className="p-1.5 text-neutral-400 hover:text-white bg-neutral-800 rounded-md transition-colors"><IconPlus /></button>
+                    <button onClick={deleteCurrentFrame} title="刪除此影格" className="flex items-center gap-1 text-xs text-neutral-400 hover:text-red-400 transition-colors px-2 py-1.5 bg-neutral-800 rounded-md">
+                      <IconTrash /> {frames.length > 1 ? "刪除" : "清空"}
+                    </button>
+                  </div>
                 </div>
                 
                 <div className="flex-1 flex items-center overflow-x-auto bg-neutral-950 rounded-lg border border-neutral-800 p-4 min-h-[160px]">
@@ -298,7 +428,7 @@
                           <div key={r} className="flex gap-[1px]">
                             {Array.from({ length: 8 }).map((_, c) => {
                               const colIndex = mIndex * 8 + c;
-                              const isLit = grid[r] && grid[r][colIndex];
+                              const isLit = currentGrid[r] && currentGrid[r][colIndex];
                               return (
                                 <div
                                   key={c}
@@ -307,11 +437,7 @@
                                   className={`w-4 h-4 md:w-5 md:h-5 rounded-full cursor-pointer transition-colors duration-75 select-none ${
                                     isLit ? 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'bg-neutral-800'
                                   }`}
-                                  style={{ 
-                                    margin: '1px',
-                                    boxSizing: 'border-box', 
-                                    border: isLit ? '1px solid #fca5a5' : '1px solid #262626'
-                                  }}
+                                  style={{ margin: '1px', boxSizing: 'border-box', border: isLit ? '1px solid #fca5a5' : '1px solid #262626' }}
                                 />
                               );
                             })}
@@ -321,7 +447,7 @@
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-neutral-500 text-center">提示：可以在網格上點擊或拖曳來自由手繪/擦除 LED。</p>
+                <p className="text-xs text-neutral-500 text-center">提示：您可以在不同影格之間切換並手動修改，所有修改將自動保存於程式碼中。</p>
               </div>
             </div>
 
@@ -329,32 +455,17 @@
             <div className="bg-neutral-900 border border-neutral-800 rounded-xl overflow-hidden">
               <div className="flex items-center justify-between px-4 border-b border-neutral-800 bg-neutral-950/50">
                 <div className="flex">
-                  <button 
-                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'arduino' ? 'border-red-500 text-red-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
-                    onClick={() => setActiveTab('arduino')}
-                  >
-                    Arduino (C/C++)
-                  </button>
-                  <button 
-                    className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'python' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}
-                    onClick={() => setActiveTab('python')}
-                  >
-                    Python
-                  </button>
+                  <button onClick={() => setActiveTab('arduino')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'arduino' ? 'border-red-500 text-red-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>Arduino (C/C++)</button>
+                  <button onClick={() => setActiveTab('python')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'python' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>Python</button>
                 </div>
-                <button 
-                  onClick={copyToClipboard}
-                  className="flex items-center gap-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-200 py-1.5 px-3 rounded-md transition-colors"
-                >
+                <button onClick={copyToClipboard} className="flex items-center gap-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-200 py-1.5 px-3 rounded-md transition-colors">
                   {copyStatus ? <span className="text-green-400">{copyStatus}</span> : <><IconCopy /> 複製程式碼</>}
                 </button>
               </div>
               
-              <div className="p-4 bg-[#0d0d0d] overflow-x-auto">
+              <div className="p-4 bg-[#0d0d0d] overflow-x-auto max-h-[400px]">
                 <pre className="text-sm font-mono text-neutral-300 leading-relaxed">
-                  <code>
-                    {activeTab === 'arduino' ? generateArduinoCode() : generatePythonCode()}
-                  </code>
+                  <code>{activeTab === 'arduino' ? generateArduinoCode() : generatePythonCode()}</code>
                 </pre>
               </div>
             </div>
