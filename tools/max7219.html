@@ -69,6 +69,7 @@
 
       const [activeTab, setActiveTab] = useState('arduino');
       const [copyStatus, setCopyStatus] = useState('');
+      const [rotate90, setRotate90] = useState(true); // 新增：控制是否旋轉 90 度
 
       // 初始化與更新所有影格的寬度
       useEffect(() => {
@@ -207,7 +208,20 @@
             for (let r = 0; r < 8; r++) {
               let byteVal = 0;
               for (let c = 0; c < 8; c++) {
-                if (grid[r] && grid[r][m * 8 + c]) {
+                let isLit = false;
+                if (rotate90) {
+                  // 向右旋轉 90 度 (順時針)
+                  const oldR = 7 - c;
+                  const oldC = m * 8 + r;
+                  isLit = grid[oldR] && grid[oldR][oldC];
+                } else {
+                  // 原本方向
+                  const oldR = r;
+                  const oldC = m * 8 + c;
+                  isLit = grid[oldR] && grid[oldR][oldC];
+                }
+                
+                if (isLit) {
                   byteVal |= (1 << (7 - c));
                 }
               }
@@ -458,9 +472,15 @@
                   <button onClick={() => setActiveTab('arduino')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'arduino' ? 'border-red-500 text-red-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>Arduino (C/C++)</button>
                   <button onClick={() => setActiveTab('python')} className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'python' ? 'border-blue-500 text-blue-400' : 'border-transparent text-neutral-400 hover:text-neutral-200'}`}>Python</button>
                 </div>
-                <button onClick={copyToClipboard} className="flex items-center gap-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-200 py-1.5 px-3 rounded-md transition-colors">
-                  {copyStatus ? <span className="text-green-400">{copyStatus}</span> : <><IconCopy /> 複製程式碼</>}
-                </button>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-1.5 text-xs text-neutral-400 cursor-pointer hover:text-white transition-colors">
+                    <input type="checkbox" checked={rotate90} onChange={(e) => setRotate90(e.target.checked)} className="rounded border-neutral-700 bg-neutral-900 accent-red-500 w-3.5 h-3.5" />
+                    輸出向右轉 90°
+                  </label>
+                  <button onClick={copyToClipboard} className="flex items-center gap-1.5 text-xs bg-neutral-800 hover:bg-neutral-700 text-neutral-200 py-1.5 px-3 rounded-md transition-colors">
+                    {copyStatus ? <span className="text-green-400">{copyStatus}</span> : <><IconCopy /> 複製程式碼</>}
+                  </button>
+                </div>
               </div>
               
               <div className="p-4 bg-[#0d0d0d] overflow-x-auto max-h-[400px]">
