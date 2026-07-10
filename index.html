@@ -402,6 +402,10 @@
             let pageId = window.location.hash.substring(1) || 'home';
             const validPages = ['home', 'portfolio', 'tools', 'blog', 'about'];
             if (!validPages.includes(pageId)) pageId = 'home';
+            if (window.location.pathname === '/') {
+                // 強制將網址替換為 /index.html (使用 replace 不會產生多餘的上一頁歷史紀錄)
+                window.location.replace('/index.html');
+            }
 
             // 隱藏所有 section
             document.querySelectorAll('.page-section').forEach(section => {
